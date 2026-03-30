@@ -2,7 +2,7 @@
      x-init="
         window.addEventListener('scroll', () => { scrolled = window.scrollY > 30 });
      "
-     :class="scrolled ? 'bg-white/95 shadow-lg shadow-gray-200/60 backdrop-blur-xl' : 'bg-white/70 backdrop-blur-md'"
+     :class="scrolled ? 'bg-white/95 shadow-sm border-b border-gray-200/50 backdrop-blur-xl' : 'bg-white/70 backdrop-blur-md'"
      class="fixed top-0 left-0 right-0 z-50 transition-all duration-500">
 
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
