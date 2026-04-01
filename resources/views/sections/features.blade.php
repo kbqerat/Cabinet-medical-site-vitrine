@@ -8,10 +8,11 @@
                 Fonctionnalités
                 <div class="w-6 h-px bg-blue-400"></div>
             </div>
-            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight mb-4">
                 Tout ce dont votre cabinet<br class="hidden sm:block">
                 <span class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">a besoin, réuni.</span>
             </h2>
+            <p class="text-gray-400 text-sm max-w-sm mx-auto">Une suite pensée pour les médecins marocains — simple, rapide, et complète.</p>
         </div>
 
         @php
