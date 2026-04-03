@@ -114,7 +114,7 @@
         @endphp
 
         {{-- Grille --}}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-start">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             @foreach($testimonials as $i => $t)
             <div class="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col gap-4
                 {{ $i >= 3 ? 'hidden md:flex' : '' }}">
@@ -132,7 +132,7 @@
                 </div>
 
                 {{-- Citation --}}
-                <p class="text-sm text-gray-600 leading-relaxed">"{{ $t['text'] }}"</p>
+                <p class="text-sm text-gray-600 leading-relaxed flex-1">"{{ $t['text'] }}"</p>
 
                 {{-- Stat --}}
                 <div class="flex items-center gap-2 bg-gray-50 rounded-2xl px-4 py-2.5">
