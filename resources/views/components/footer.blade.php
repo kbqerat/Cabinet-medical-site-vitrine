@@ -123,9 +123,8 @@
         </div>
 
         {{-- Bas de page --}}
-        <div class="border-t border-white/5 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p class="text-xs text-gray-600">© 2026 MediAssist. Tous droits réservés.</p>
-            <div class="flex flex-wrap items-center gap-5">
+        <div class="border-t border-white/5 py-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
+            <div class="flex items-center gap-4 sm:order-2">
                 @foreach([
                     ['label' => 'Politique de confidentialité', 'href' => '/confidentialite'],
                     ['label' => "Conditions d'utilisation",     'href' => '/cgu'],
@@ -134,6 +133,7 @@
                 <a href="{{ $legal['href'] }}" class="text-xs text-gray-600 hover:text-gray-400 transition-colors duration-200">{{ $legal['label'] }}</a>
                 @endforeach
             </div>
+            <p class="text-xs text-gray-600 sm:order-1">© 2026 MediAssist. Tous droits réservés.</p>
         </div>
 
     </div>
