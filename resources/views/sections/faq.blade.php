@@ -133,7 +133,7 @@
 
                 {{-- Accordéon par catégorie --}}
                 @foreach($categories as $ci => $faqs)
-                <div x-show="cat === {{ $ci }}"
+                <div x-cloak x-show="cat === {{ $ci }}"
                      x-transition:enter="transition ease-out duration-200"
                      x-transition:enter-start="opacity-0 translate-y-2"
                      x-transition:enter-end="opacity-100 translate-y-0"
@@ -171,7 +171,7 @@
                             </div>
 
                             {{-- Réponse --}}
-                            <div x-show="open === {{ $fi }}"
+                            <div x-cloak x-show="open === {{ $fi }}"
                                  x-transition:enter="transition ease-out duration-200"
                                  x-transition:enter-start="opacity-0 -translate-y-1"
                                  x-transition:enter-end="opacity-100 translate-y-0"

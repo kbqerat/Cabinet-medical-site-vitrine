@@ -3,20 +3,25 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\Http\HttpClientOptions;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        //
+        $this->app->singleton(Factory::class, function () {
+            $options = HttpClientOptions::default()
+                ->withGuzzleConfigOptions([
+                    'verify' => 'C:/php/cacert.pem',
+                ]);
+
+            return (new Factory())
+                ->withServiceAccount(env('FIREBASE_CREDENTIALS'))
+                ->withHttpClientOptions($options);
+        });
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         //

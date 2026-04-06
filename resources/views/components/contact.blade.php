@@ -231,7 +231,7 @@
                 </div>
 
                 {{-- Succès --}}
-                <div x-show="sent" class="flex flex-col items-center justify-center text-center py-12 gap-5">
+                <div x-cloak x-show="sent" class="flex flex-col items-center justify-center text-center py-12 gap-5">
                     <div class="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center">
                         <svg class="w-8 h-8 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -252,7 +252,7 @@
     </div>
 
     {{-- Modal carte Oujda --}}
-    <div x-show="showMap"
+    <div x-cloak x-show="showMap"
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"

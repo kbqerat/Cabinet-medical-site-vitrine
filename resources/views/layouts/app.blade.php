@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MediAssist — Logiciel de Gestion de Cabinet Médical</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <style>[x-cloak]{display:none!important}</style>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -49,7 +50,7 @@
 
         {{-- Panel --}}
         <div class="w-80 bg-white rounded-3xl shadow-2xl shadow-black/15 border border-gray-100 overflow-hidden"
-             x-show="open"
+             x-cloak x-show="open"
              x-transition:enter="transition ease-out duration-250"
              x-transition:enter-start="opacity-0 translate-y-4 scale-95"
              x-transition:enter-end="opacity-100 translate-y-0 scale-100"

@@ -98,7 +98,7 @@
                     <div class="flex-1 overflow-hidden bg-[#f8faff]">
 
                         {{-- ── DASHBOARD ── --}}
-                        <div x-show="tab === 0" class="h-full p-4 lg:p-5 overflow-auto">
+                        <div x-cloak x-show="tab === 0" class="h-full p-4 lg:p-5 overflow-auto">
                             <div class="flex items-center justify-between mb-4">
                                 <div>
                                     <h3 class="text-sm font-bold text-gray-800">Bonjour, Dr. Alaoui 👋</h3>
@@ -147,7 +147,7 @@
                         </div>
 
                         {{-- ── PATIENTS ── --}}
-                        <div x-show="tab === 1" class="h-full p-4 lg:p-5 overflow-auto">
+                        <div x-cloak x-show="tab === 1" class="h-full p-4 lg:p-5 overflow-auto">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="text-sm font-bold text-gray-800">Patients <span class="text-gray-400 font-normal">(248)</span></h3>
                                 <button class="flex items-center gap-1.5 bg-blue-600 text-white text-[11px] font-semibold px-3 py-1.5 rounded-lg">
@@ -192,7 +192,7 @@
                         </div>
 
                         {{-- ── AGENDA ── --}}
-                        <div x-show="tab === 2" class="h-full p-4 lg:p-5 overflow-auto">
+                        <div x-cloak x-show="tab === 2" class="h-full p-4 lg:p-5 overflow-auto">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="text-sm font-bold text-gray-800">Agenda — Mars 2026</h3>
                                 <div class="flex items-center gap-1">
