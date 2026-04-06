@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan:*)",
+      "Bash(composer require:*)",
+      "Bash(php -m)",
+      "Bash(php --ini)",
+      "Bash(php -r \"echo realpath\\('storage/app/firebase-credentials.json'\\);\")",
+      "Bash(curl -o \"C:/php/cacert.pem\" https://curl.se/ca/cacert.pem)",
+      "Bash(sed -i 's|;curl.cainfo =|curl.cainfo = \"C:/php/cacert.pem\"|' \"C:/php/php.ini\")",
+      "Bash(sed -i 's|;openssl.cafile=|openssl.cafile=\"C:/php/cacert.pem\"|' \"C:/php/php.ini\")"
+    ]
+  }
+}

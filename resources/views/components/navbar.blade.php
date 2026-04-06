@@ -57,7 +57,7 @@
                     </button>
 
                     {{-- Dropdown desktop --}}
-                    <div x-show="loginOpen"
+                    <div x-cloak x-show="loginOpen"
                          x-transition:enter="transition ease-out duration-200"
                          x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
                          x-transition:enter-end="opacity-100 scale-100 translate-y-0"
@@ -66,7 +66,10 @@
                          x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
                          class="absolute right-0 top-[calc(100%+8px)] w-64 bg-white rounded-2xl shadow-lg shadow-gray-200/50 border border-gray-100 overflow-hidden z-50">
 
-                        <div class="p-2 space-y-1">
+                        <div class="px-3 pt-3 pb-1">
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 px-1 mb-2">Connexion</p>
+                        </div>
+                        <div class="px-2 pb-2 space-y-1">
                             <a href="/login/doctor"
                                class="flex items-center gap-3.5 px-3.5 py-3 rounded-xl hover:bg-blue-50 transition-colors duration-150 group">
                                 <div class="w-9 h-9 bg-blue-100 group-hover:bg-blue-200 rounded-xl flex items-center justify-center transition-colors duration-150 shrink-0">
@@ -76,8 +79,8 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <div class="text-sm font-semibold text-gray-800 group-hover:text-blue-700 transition-colors">Espace médecin</div>
-                                    <div class="text-xs text-gray-400">Gérez votre cabinet</div>
+                                    <div class="text-sm font-semibold text-gray-800 group-hover:text-blue-700 transition-colors">Connexion médecin</div>
+                                    <div class="text-xs text-gray-400">Accéder à votre cabinet</div>
                                 </div>
                                 <svg class="w-4 h-4 text-gray-300 group-hover:text-blue-400 ml-auto transition-all duration-150 group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
@@ -94,8 +97,8 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <div class="text-sm font-semibold text-gray-800 group-hover:text-indigo-700 transition-colors">Espace admin</div>
-                                    <div class="text-xs text-gray-400">Tableau de bord administrateur</div>
+                                    <div class="text-sm font-semibold text-gray-800 group-hover:text-indigo-700 transition-colors">Connexion admin</div>
+                                    <div class="text-xs text-gray-400">Accès administrateur</div>
                                 </div>
                                 <svg class="w-4 h-4 text-gray-300 group-hover:text-indigo-400 ml-auto transition-all duration-150 group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
@@ -103,11 +106,9 @@
                             </a>
                         </div>
 
-                        <div class="border-t border-gray-100 px-4 py-3 bg-gray-50/60">
-                            <p class="text-xs text-gray-400 text-center">
-                                Pas encore client ?
-                                <a href="#contact" data-scroll @click="loginOpen = false" class="text-blue-600 font-semibold hover:underline">Demander une démo</a>
-                            </p>
+                        <div class="border-t border-gray-100 px-4 py-3 bg-gray-50/60 flex items-center justify-between">
+                            <p class="text-xs text-gray-400">Pas encore de compte ?</p>
+                            <a href="/inscription" @click="loginOpen = false" class="text-xs text-blue-600 font-semibold hover:underline">S'inscrire →</a>
                         </div>
                     </div>
                 </div>
@@ -151,7 +152,7 @@
     </div>
 
     {{-- Panel nav mobile (burger) --}}
-    <div x-show="open"
+    <div x-cloak x-show="open"
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0 -translate-y-2"
          x-transition:enter-end="opacity-100 translate-y-0"
@@ -197,7 +198,7 @@
     </div>
 
     {{-- Panel connexion mobile --}}
-    <div x-show="mobileLogin"
+    <div x-cloak x-show="mobileLogin"
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0 -translate-y-2"
          x-transition:enter-end="opacity-100 translate-y-0"
@@ -206,7 +207,7 @@
          x-transition:leave-end="opacity-0 -translate-y-2"
          class="md:hidden border-t border-gray-100/80 bg-white backdrop-blur-xl px-5 py-5 overscroll-contain" style="touch-action: none">
 
-        <p class="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-3">Choisissez votre espace</p>
+        <p class="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-3">Connexion</p>
 
         <div class="space-y-2.5">
             <a href="/login/doctor" @click="mobileLogin = false"
@@ -218,8 +219,8 @@
                     </svg>
                 </div>
                 <div class="flex-1">
-                    <div class="text-sm font-semibold text-gray-800">Espace médecin</div>
-                    <div class="text-xs text-gray-400">Gérez votre cabinet</div>
+                    <div class="text-sm font-semibold text-gray-800">Connexion médecin</div>
+                    <div class="text-xs text-gray-400">Accéder à votre cabinet</div>
                 </div>
                 <svg class="w-4 h-4 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
@@ -236,8 +237,8 @@
                     </svg>
                 </div>
                 <div class="flex-1">
-                    <div class="text-sm font-semibold text-gray-800">Espace admin</div>
-                    <div class="text-xs text-gray-400">Tableau de bord administrateur</div>
+                    <div class="text-sm font-semibold text-gray-800">Connexion admin</div>
+                    <div class="text-xs text-gray-400">Accès administrateur</div>
                 </div>
                 <svg class="w-4 h-4 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
@@ -245,10 +246,10 @@
             </a>
         </div>
 
-        <p class="text-xs text-gray-400 text-center mt-4">
-            Pas encore client ?
-            <a href="#contact" data-scroll @click="mobileLogin = false" class="text-blue-600 font-semibold">Demander une démo</a>
-        </p>
+        <div class="flex items-center justify-between mt-4">
+            <p class="text-xs text-gray-400">Pas encore de compte ?</p>
+            <a href="/inscription" @click="mobileLogin = false" class="text-xs text-blue-600 font-semibold">S'inscrire →</a>
+        </div>
     </div>
 
 </nav>
