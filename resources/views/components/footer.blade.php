@@ -32,28 +32,26 @@
                     La solution de gestion de cabinet médical pensée pour les professionnels de santé marocains.
                 </p>
 
-                {{-- Badges --}}
-                <div class="flex flex-wrap gap-2">
-                    @foreach(['RGPD', 'Données au Maroc', 'Chiffrement AES-256'] as $badge)
-                    <span class="text-[11px] font-semibold text-gray-500 border border-gray-800 px-2.5 py-1 rounded-lg">
-                        {{ $badge }}
-                    </span>
-                    @endforeach
-                </div>
-
                 {{-- Réseaux --}}
                 <div class="flex items-center gap-2">
-                    @foreach([
-                        ['icon' => 'M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z M4 6a2 2 0 100-4 2 2 0 000 4z'],
-                        ['icon' => 'M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z'],
-                        ['icon' => 'M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z'],
-                    ] as $s)
-                    <a href="#" class="w-8 h-8 bg-white/5 hover:bg-blue-600/20 border border-white/5 hover:border-blue-500/30 rounded-xl flex items-center justify-center text-gray-500 hover:text-blue-400 transition-all duration-200">
+                    <a href="https://linkedin.com" target="_blank" rel="noopener"
+                       class="w-8 h-8 bg-white/5 hover:bg-[#0077b5]/20 border border-white/5 hover:border-[#0077b5]/30 rounded-xl flex items-center justify-center text-gray-500 hover:text-[#0077b5] transition-all duration-200">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $s['icon'] }}"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z M4 6a2 2 0 100-4 2 2 0 000 4z"/>
                         </svg>
                     </a>
-                    @endforeach
+                    <a href="https://twitter.com" target="_blank" rel="noopener"
+                       class="w-8 h-8 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 rounded-xl flex items-center justify-center text-gray-500 hover:text-white transition-all duration-200">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/>
+                        </svg>
+                    </a>
+                    <a href="https://facebook.com" target="_blank" rel="noopener"
+                       class="w-8 h-8 bg-white/5 hover:bg-[#1877f2]/20 border border-white/5 hover:border-[#1877f2]/30 rounded-xl flex items-center justify-center text-gray-500 hover:text-[#1877f2] transition-all duration-200">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>
+                        </svg>
+                    </a>
                 </div>
             </div>
 
@@ -106,7 +104,7 @@
                     @foreach([
                         ['icon' => 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', 'text' => 'contact@mediassist.ma'],
                         ['icon' => 'M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z', 'text' => '+212 5 XX XX XX XX'],
-                        ['icon' => 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z', 'text' => 'Casablanca, Maroc'],
+                        ['icon' => 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z', 'text' => 'Oujda, Maroc'],
                     ] as $c)
                     <li class="flex items-start gap-2.5">
                         <div class="w-7 h-7 bg-white/5 border border-white/5 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
