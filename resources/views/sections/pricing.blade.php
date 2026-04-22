@@ -1,3 +1,49 @@
+@php
+$planConfig = $planConfig ?? [];
+
+$plans = [
+    [
+        'key'     => 'starter',
+        'name'    => 'Starter',
+        'desc'    => $planConfig['starter_desc'] ?? 'Pour les médecins solo qui débutent',
+        'monthly' => $planConfig['starter_price_monthly'] ?? 290,
+        'annual'  => $planConfig['starter_price_annual']  ?? 232,
+        'suffix'  => null,
+        'color'   => 'text-blue-600',
+        'bg'      => 'bg-blue-50',
+        'btn'     => 'border-2 border-blue-600 text-blue-600 hover:bg-blue-50',
+        'popular' => false,
+        'features'=> json_decode($planConfig['starter_features_json'] ?? '[]', true) ?: [],
+    ],
+    [
+        'key'     => 'pro',
+        'name'    => 'Pro',
+        'desc'    => $planConfig['pro_desc'] ?? 'Le plus populaire pour les cabinets actifs',
+        'monthly' => $planConfig['pro_price_monthly'] ?? 490,
+        'annual'  => $planConfig['pro_price_annual']  ?? 392,
+        'suffix'  => null,
+        'color'   => 'text-white',
+        'bg'      => 'bg-white/20',
+        'btn'     => 'bg-white text-blue-600 hover:bg-blue-50',
+        'popular' => true,
+        'features'=> json_decode($planConfig['pro_features_json'] ?? '[]', true) ?: [],
+    ],
+    [
+        'key'     => 'licence',
+        'name'    => 'Licence',
+        'desc'    => $planConfig['licence_desc']   ?? 'Paiement unique, hébergé chez vous',
+        'monthly' => $planConfig['licence_price']  ?? 4900,
+        'annual'  => $planConfig['licence_price']  ?? 4900,
+        'suffix'  => $planConfig['licence_suffix'] ?? 'MAD · paiement unique',
+        'color'   => 'text-gray-700',
+        'bg'      => 'bg-gray-50',
+        'btn'     => 'border-2 border-gray-300 text-gray-700 hover:bg-gray-50',
+        'popular' => false,
+        'features'=> json_decode($planConfig['licence_features_json'] ?? '[]', true) ?: [],
+    ],
+];
+@endphp
+
 <section id="pricing" class="py-24 bg-white relative overflow-hidden">
 
     {{-- Déco --}}
@@ -43,69 +89,6 @@
             {{-- Cards --}}
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5 w-full max-w-4xl mx-auto">
 
-                @php
-                $plans = [
-                    [
-                        'name'    => 'Starter',
-                        'desc'    => 'Pour les médecins solo qui débutent',
-                        'monthly' => '290',
-                        'annual'  => '232',
-                        'color'   => 'text-blue-600',
-                        'bg'      => 'bg-blue-50',
-                        'btn'     => 'border-2 border-blue-600 text-blue-600 hover:bg-blue-50',
-                        'popular' => false,
-                        'features' => [
-                            ['ok' => true,  'text' => '1 médecin'],
-                            ['ok' => true,  'text' => 'Jusqu\'à 300 patients'],
-                            ['ok' => true,  'text' => 'Agenda & RDV'],
-                            ['ok' => true,  'text' => 'Ordonnances PDF'],
-                            ['ok' => false, 'text' => 'Multi-utilisateurs'],
-                            ['ok' => false, 'text' => 'App mobile'],
-                            ['ok' => false, 'text' => 'Support prioritaire'],
-                        ],
-                    ],
-                    [
-                        'name'    => 'Pro',
-                        'desc'    => 'Le plus populaire pour les cabinets actifs',
-                        'monthly' => '490',
-                        'annual'  => '392',
-                        'color'   => 'text-white',
-                        'bg'      => 'bg-white/20',
-                        'btn'     => 'bg-white text-blue-600 hover:bg-blue-50',
-                        'popular' => true,
-                        'features' => [
-                            ['ok' => true, 'text' => '1 à 3 médecins'],
-                            ['ok' => true, 'text' => 'Patients illimités'],
-                            ['ok' => true, 'text' => 'Agenda & RDV avancé'],
-                            ['ok' => true, 'text' => 'Ordonnances & analyses'],
-                            ['ok' => true, 'text' => 'Multi-utilisateurs'],
-                            ['ok' => true, 'text' => 'App mobile incluse'],
-                            ['ok' => false,'text' => 'Support prioritaire'],
-                        ],
-                    ],
-                    [
-                        'name'    => 'Licence',
-                        'desc'    => 'Paiement unique, hébergé chez vous',
-                        'monthly' => '4900',
-                        'annual'  => '4900',
-                        'suffix'  => 'MAD · paiement unique',
-                        'color'   => 'text-gray-700',
-                        'bg'      => 'bg-gray-50',
-                        'btn'     => 'border-2 border-gray-300 text-gray-700 hover:bg-gray-50',
-                        'popular' => false,
-                        'features' => [
-                            ['ok' => true,  'text' => '1 cabinet'],
-                            ['ok' => true,  'text' => 'Installation sur votre serveur'],
-                            ['ok' => true,  'text' => 'Accès illimité à vie'],
-                            ['ok' => true,  'text' => 'MAJ incluses 1 an'],
-                            ['ok' => true,  'text' => 'Code source fourni'],
-                            ['ok' => false, 'text' => 'App mobile'],
-                            ['ok' => false, 'text' => 'Hébergement cloud'],
-                        ],
-                    ],
-                ];
-                @endphp
-
                 @foreach($plans as $plan)
                 <div class="relative flex flex-col rounded-3xl overflow-hidden transition-all duration-300
                     {{ $plan['popular']
@@ -145,20 +128,21 @@
                                 </span>
                             </div>
                             <p class="text-xs mt-0.5 {{ $plan['popular'] ? 'text-blue-200' : 'text-gray-400' }}">
-                                @isset($plan['suffix'])
+                                @if($plan['suffix'])
                                     {{ $plan['suffix'] }}
                                 @else
                                     <span x-text="annual ? 'par mois · facturé annuellement' : 'par mois · sans engagement'"></span>
-                                @endisset
+                                @endif
                             </p>
                         </div>
 
                         {{-- Features --}}
                         <ul class="space-y-2.5 mb-7 flex-1">
                             @foreach($plan['features'] as $f)
+                            @php $ok = $f['ok'] ?? false; @endphp
                             <li class="flex items-center gap-2.5 text-xs
-                                {{ $plan['popular'] ? ($f['ok'] ? 'text-white' : 'text-blue-300/50') : ($f['ok'] ? 'text-gray-600' : 'text-gray-300') }}">
-                                @if($f['ok'])
+                                {{ $plan['popular'] ? ($ok ? 'text-white' : 'text-blue-300/50') : ($ok ? 'text-gray-600' : 'text-gray-300') }}">
+                                @if($ok)
                                 <div class="w-4 h-4 rounded-full flex items-center justify-center shrink-0
                                     {{ $plan['popular'] ? 'bg-white/20' : $plan['bg'] }}">
                                     <svg class="w-2.5 h-2.5 {{ $plan['color'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">

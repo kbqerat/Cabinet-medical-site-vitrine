@@ -1,3 +1,58 @@
+@php
+$isAdminFooter = session()->has('firebase_uid') && session('firebase_email') === env('ADMIN_EMAIL');
+@endphp
+
+@if($isAdminFooter)
+
+{{-- ── FOOTER ADMIN ── --}}
+<footer style="background: #0f1729; border-top: 1px solid rgba(255,255,255,0.05);">
+    <div class="max-w-7xl mx-auto px-5 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+
+        {{-- Logo + copyright --}}
+        <div class="flex items-center gap-3">
+            <div class="w-7 h-7 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+            </div>
+            <span class="text-sm font-bold text-white">Medi<span class="text-indigo-400">Assist</span></span>
+            <span class="text-gray-600 text-xs hidden sm:inline">·</span>
+            <span class="text-xs text-gray-600 hidden sm:inline">© {{ date('Y') }} · Portail admin</span>
+        </div>
+
+        {{-- Liens rapides admin --}}
+        <div class="flex items-center gap-1">
+            @foreach([
+                ['href' => '/admin/dashboard', 'label' => 'Dashboard'],
+                ['href' => '/admin/medecins',  'label' => 'Médecins'],
+                ['href' => '/admin/plans',     'label' => 'Plans'],
+                ['href' => '/admin/messages',  'label' => 'Messages'],
+            ] as $link)
+            <a href="{{ $link['href'] }}"
+               class="text-xs text-gray-500 hover:text-indigo-400 transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5">
+                {{ $link['label'] }}
+            </a>
+            @endforeach
+        </div>
+
+        {{-- Déconnexion --}}
+        <form action="/logout" method="POST">
+            @csrf
+            <button type="submit"
+                    class="flex items-center gap-1.5 text-xs text-gray-600 hover:text-red-400 transition-colors group">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+                Se déconnecter
+            </button>
+        </form>
+
+    </div>
+</footer>
+
+@else
+
+{{-- ── FOOTER PUBLIC ── --}}
 <footer class="bg-[#0a0f1e] relative overflow-hidden">
 
     {{-- Déco --}}
@@ -131,8 +186,10 @@
                 <a href="{{ $legal['href'] }}" class="text-xs text-gray-600 hover:text-gray-400 transition-colors duration-200">{{ $legal['label'] }}</a>
                 @endforeach
             </div>
-            <p class="text-xs text-gray-600 sm:order-1">© 2026 MediAssist. Tous droits réservés.</p>
+            <p class="text-xs text-gray-600 sm:order-1">© {{ date('Y') }} MediAssist. Tous droits réservés.</p>
         </div>
 
     </div>
 </footer>
+
+@endif

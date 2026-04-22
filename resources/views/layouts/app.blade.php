@@ -23,7 +23,8 @@
     {{-- Footer --}}
     @include('components.footer')
 
-    {{-- Floating contact widget --}}
+    {{-- Floating contact widget (masqué pour l'admin) --}}
+    @if(!(session()->has('firebase_uid') && session('firebase_email') === env('ADMIN_EMAIL')))
     <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3"
          x-data="{
              open: false,
@@ -184,6 +185,7 @@
             </svg>
         </button>
     </div>
+    @endif
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {

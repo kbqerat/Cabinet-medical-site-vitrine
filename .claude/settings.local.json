@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php /c/Users/bktar/cabinet-medical-vitrine/artisan route:list --path=admin)",
+      "Bash(php artisan:*)",
+      "Bash(grep -v \"^$\")",
+      "Bash(php -r ':*)",
+      "Bash(xargs -I{} grep -l \"layouts.doctor\\\\|layouts/doctor\" storage/framework/views/{})",
+      "Bash(sed -i 's/linear-gradient\\(135deg, #1d4ed8, #4f46e5\\)/linear-gradient\\(135deg, #0d2150, #0f3460\\)/g' resources/views/admin/messages.blade.php resources/views/admin/parametres.blade.php resources/views/auth/parametres.blade.php resources/views/auth/profil.blade.php)",
+      "Bash(sed -i 's/linear-gradient\\(135deg, #1d4ed8 0%, #4f46e5 100%\\)/linear-gradient\\(135deg, #0d2150, #0f3460\\)/g' resources/views/auth/login.blade.php)",
+      "Bash(sed -i 's/linear-gradient\\(135deg, #1e3a8a 0%, #1d4ed8 50%, #4f46e5 100%\\)/linear-gradient\\(135deg, #0a1628 0%, #0d2150 55%, #0f3460 100%\\)/g' resources/views/auth/dashboard.blade.php)",
+      "Bash(php -r ' *)",
+      "Bash(grep \"GET.*/$\")"
+    ]
+  }
+}
