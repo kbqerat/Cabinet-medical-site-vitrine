@@ -1,0 +1,10 @@
+node_modules
+tests
+storage/logs
+storage/framework
+storage/app
+.env
+.env.*
+*.local
+README.md
+phpunit.xml

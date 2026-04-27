@@ -7,6 +7,20 @@ use Kreait\Firebase\Contract\Auth;
 use Illuminate\Support\Facades\Http;
 use Google\Auth\Credentials\ServiceAccountCredentials;
 
+// SSL : chemin local sur Windows, vérification native en production
+function httpOptions(): array {
+    return app()->environment('local') ? ['verify' => 'C:/php/cacert.pem'] : [];
+}
+
+// Firebase credentials : supporte fichier (local) ou JSON string (Vercel)
+function firebaseCredentials(): array {
+    $json = env('FIREBASE_CREDENTIALS_JSON');
+    if ($json) {
+        return json_decode($json, true);
+    }
+    return firebaseCredentials();
+}
+
 Route::get('/', function () {
     $planConfig = firestorePlanConfig();
     return view('home', compact('planConfig'));
@@ -94,7 +108,7 @@ Route::post('/inscription', function (Request $request, Auth $auth) {
     // Obtenir un token OAuth via le service account
     $credentials = new ServiceAccountCredentials(
         'https://www.googleapis.com/auth/datastore',
-        json_decode(file_get_contents(env('FIREBASE_CREDENTIALS')), true)
+        firebaseCredentials()
     );
     $token = $credentials->fetchAuthToken()['access_token'];
 
@@ -145,7 +159,7 @@ Route::post('/login/doctor', function (Request $request) {
 
     $apiKey = env('FIREBASE_WEB_API_KEY');
 
-    $response = \Illuminate\Support\Facades\Http::withOptions(['verify' => 'C:/php/cacert.pem'])
+    $response = \Illuminate\Support\Facades\Http::withOptions(httpOptions())
         ->post("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={$apiKey}", [
             'email'             => $data['email'],
             'password'          => $data['password'],
@@ -200,7 +214,7 @@ Route::post('/login/admin', function (Request $request) {
 
     $apiKey = env('FIREBASE_WEB_API_KEY');
 
-    $response = \Illuminate\Support\Facades\Http::withOptions(['verify' => 'C:/php/cacert.pem'])
+    $response = \Illuminate\Support\Facades\Http::withOptions(httpOptions())
         ->post("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={$apiKey}", [
             'email'             => $data['email'],
             'password'          => $data['password'],
@@ -292,7 +306,7 @@ Route::middleware('doctor')->group(function () {
 
         $apiKey = env('FIREBASE_WEB_API_KEY');
 
-        $check = \Illuminate\Support\Facades\Http::withOptions(['verify' => 'C:/php/cacert.pem'])
+        $check = \Illuminate\Support\Facades\Http::withOptions(httpOptions())
             ->post("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={$apiKey}", [
                 'email'             => session('firebase_email'),
                 'password'          => $data['current_password'],
@@ -334,7 +348,7 @@ function firestoreToken(): string
 {
     $credentials = new \Google\Auth\Credentials\ServiceAccountCredentials(
         'https://www.googleapis.com/auth/datastore',
-        json_decode(file_get_contents(env('FIREBASE_CREDENTIALS')), true)
+        firebaseCredentials()
     );
     return $credentials->fetchAuthToken()['access_token'];
 }
@@ -609,7 +623,7 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         $apiKey = env('FIREBASE_WEB_API_KEY');
 
         // Vérifier l'ancien mot de passe via Firebase REST API
-        $check = \Illuminate\Support\Facades\Http::withOptions(['verify' => 'C:/php/cacert.pem'])
+        $check = \Illuminate\Support\Facades\Http::withOptions(httpOptions())
             ->post("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={$apiKey}", [
                 'email'             => env('ADMIN_EMAIL'),
                 'password'          => $data['current_password'],
