@@ -1,7 +1,7 @@
 {
     "version": 2,
     "framework": null,
-    "buildCommand": "npm run build && composer install --no-dev --optimize-autoloader",
+    "buildCommand": "npm run build",
     "outputDirectory": "public",
     "functions": {
         "api/index.php": {
