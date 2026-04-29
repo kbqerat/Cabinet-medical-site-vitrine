@@ -1,48 +1,27 @@
 <?php return array (
-  'kreait/laravel-firebase' => 
+  'kreait/laravel-firebase' =>
   array (
-    'aliases' => 
+    'aliases' =>
     array (
       'Firebase' => 'Kreait\\Laravel\\Firebase\\Facades\\Firebase',
     ),
-    'providers' => 
+    'providers' =>
     array (
       0 => 'Kreait\\Laravel\\Firebase\\ServiceProvider',
     ),
   ),
-  'laravel/pail' => 
+  'laravel/tinker' =>
   array (
-    'providers' => 
-    array (
-      0 => 'Laravel\\Pail\\PailServiceProvider',
-    ),
-  ),
-  'laravel/tinker' => 
-  array (
-    'providers' => 
+    'providers' =>
     array (
       0 => 'Laravel\\Tinker\\TinkerServiceProvider',
     ),
   ),
-  'nesbot/carbon' => 
+  'nesbot/carbon' =>
   array (
-    'providers' => 
+    'providers' =>
     array (
       0 => 'Carbon\\Laravel\\ServiceProvider',
-    ),
-  ),
-  'nunomaduro/collision' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
-    ),
-  ),
-  'nunomaduro/termwind' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Termwind\\Laravel\\TermwindServiceProvider',
     ),
   ),
 );
