@@ -1,25 +1,25 @@
 <?php return array (
-  'kreait/laravel-firebase' =>
+  'kreait/laravel-firebase' => 
   array (
-    'aliases' =>
+    'aliases' => 
     array (
       'Firebase' => 'Kreait\\Laravel\\Firebase\\Facades\\Firebase',
     ),
-    'providers' =>
+    'providers' => 
     array (
       0 => 'Kreait\\Laravel\\Firebase\\ServiceProvider',
     ),
   ),
-  'laravel/tinker' =>
+  'laravel/tinker' => 
   array (
-    'providers' =>
+    'providers' => 
     array (
       0 => 'Laravel\\Tinker\\TinkerServiceProvider',
     ),
   ),
-  'nesbot/carbon' =>
+  'nesbot/carbon' => 
   array (
-    'providers' =>
+    'providers' => 
     array (
       0 => 'Carbon\\Laravel\\ServiceProvider',
     ),
