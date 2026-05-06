@@ -5,6 +5,37 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
+// Serve static assets directly — bypasses Vercel's unreliable filesystem handler
+$uri  = $_SERVER['REQUEST_URI'] ?? '/';
+$path = parse_url($uri, PHP_URL_PATH);
+$file = __DIR__ . '/../public' . $path;
+
+if ($path !== '/' && file_exists($file) && is_file($file)) {
+    $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+    $mime = [
+        'css'   => 'text/css',
+        'js'    => 'application/javascript',
+        'svg'   => 'image/svg+xml',
+        'ico'   => 'image/x-icon',
+        'png'   => 'image/png',
+        'jpg'   => 'image/jpeg',
+        'jpeg'  => 'image/jpeg',
+        'gif'   => 'image/gif',
+        'webp'  => 'image/webp',
+        'woff'  => 'font/woff',
+        'woff2' => 'font/woff2',
+        'ttf'   => 'font/ttf',
+        'txt'   => 'text/plain',
+        'json'  => 'application/json',
+    ];
+    if (isset($mime[$ext])) {
+        header('Content-Type: ' . $mime[$ext]);
+        header('Cache-Control: public, max-age=31536000, immutable');
+        readfile($file);
+        exit;
+    }
+}
+
 // Vercel: only /tmp is writable
 $storagePath = '/tmp/laravel-storage';
 $cachePath   = '/tmp/laravel-cache';
