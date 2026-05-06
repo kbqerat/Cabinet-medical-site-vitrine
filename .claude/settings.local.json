@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(composer install *)",
+      "Bash(php artisan *)",
+      "Bash(Get-Content \"c:\\\\Users\\\\bktar\\\\cabinet-medical-vitrine\\\\storage\\\\logs\\\\laravel.log\")",
+      "Bash(Select-Object -Last 80)",
+      "PowerShell($bytes = [System.IO.File]::ReadAllBytes\\(\"c:\\\\Users\\\\bktar\\\\cabinet-medical-vitrine\\\\.env\"\\); $bytes[0..5] | ForEach-Object { $_.ToString\\(\"X2\"\\) })",
+      "PowerShell(Get-Process -Name \"php\" -ErrorAction SilentlyContinue)",
+      "PowerShell(Stop-Process -Force)",
+      "PowerShell(cd \"c:\\\\Users\\\\bktar\\\\cabinet-medical-vitrine\"; Remove-Item \"storage\\\\logs\\\\serve_out.log\",\"storage\\\\logs\\\\serve_err.log\" -ErrorAction SilentlyContinue; Start-Process -FilePath \"php\" -ArgumentList \"-d\", \"memory_limit=512M\", \"artisan\", \"serve\", \"--host=127.0.0.1\", \"--port=8000\" -RedirectStandardOutput \"storage\\\\logs\\\\serve_out.log\" -RedirectStandardError \"storage\\\\logs\\\\serve_err.log\" -NoNewWindow; Start-Sleep -Seconds 5; try { $r = Invoke-WebRequest -Uri \"http://127.0.0.1:8000\" -UseBasicParsing -TimeoutSec 15; \"HTTP $\\($r.StatusCode\\)\" } catch { $_.Exception.Message })",
+      "PowerShell(\\(Get-Item \"c:\\\\Users\\\\bktar\\\\cabinet-medical-vitrine\\\\storage\\\\app\\\\firebase-credentials.json\"\\).Length)",
+      "PowerShell(Get-Process -Name \"php\" -ErrorAction SilentlyContinue | Stop-Process -Force; Start-Sleep -Seconds 1; cd \"c:\\\\Users\\\\bktar\\\\cabinet-medical-vitrine\"; Remove-Item \"storage\\\\logs\\\\serve_out.log\",\"storage\\\\logs\\\\serve_err.log\" -ErrorAction SilentlyContinue; Start-Process -FilePath \"php\" -ArgumentList \"artisan\", \"serve\", \"--host=127.0.0.1\", \"--port=8000\" -RedirectStandardOutput \"storage\\\\logs\\\\serve_out.log\" -RedirectStandardError \"storage\\\\logs\\\\serve_err.log\" -NoNewWindow; Write-Host \"Serveur lancé...\"; Start-Sleep -Seconds 8; try { $r = Invoke-WebRequest -Uri \"http://127.0.0.1:8000\" -UseBasicParsing -TimeoutSec 20; \"HTTP $\\($r.StatusCode\\) — OK !\" } catch { \"ERREUR: $\\($_.Exception.Message\\)\" })",
+      "PowerShell(php artisan view:clear 2>&1)"
+    ]
+  }
+}

@@ -27,6 +27,74 @@
                 </div>
             </div>
 
+            {{-- Changer l'adresse e-mail (collapsible) --}}
+            <div x-data="{ open: false, loading: false, showPass: false }">
+                <button type="button" @click="open = !open"
+                        class="flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors group">
+                    <div class="w-6 h-6 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors">
+                        <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="open ? 'rotate-45' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                        </svg>
+                    </div>
+                    <span x-text="open ? 'Annuler' : 'Changer l\'adresse e-mail'"></span>
+                </button>
+                <div x-show="open" x-cloak
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 -translate-y-2"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 -translate-y-2"
+                     class="mt-4">
+                    <form action="/admin/parametres/email" method="POST" @submit="loading = true">
+                        @csrf
+                        <div class="space-y-3">
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                <input type="email" name="new_email" required
+                                       placeholder="Nouvelle adresse e-mail administrateur"
+                                       class="w-full pl-10 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 focus:bg-white transition-all">
+                            </div>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                    </svg>
+                                </div>
+                                <input :type="showPass ? 'text' : 'password'" name="current_password" required
+                                       placeholder="Mot de passe actuel (pour confirmer)"
+                                       class="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 focus:bg-white transition-all">
+                                <button type="button" @click="showPass = !showPass" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-300 hover:text-gray-500 transition-colors">
+                                    <svg x-show="!showPass" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    <svg x-show="showPass" x-cloak class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mt-3">
+                            Le nouvel e-mail sera mis à jour dans Firebase et dans la configuration serveur. Vous devrez vous reconnecter.
+                        </p>
+                        <div class="mt-4">
+                            <button type="submit" :disabled="loading"
+                                    class="inline-flex items-center gap-2 text-sm font-semibold text-white px-5 py-2.5 rounded-xl shadow-sm transition-all hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+                                    style="background: linear-gradient(135deg, #0d2150, #0f3460);">
+                                <svg x-show="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                </svg>
+                                <svg x-show="!loading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                                <span x-text="loading ? 'Mise à jour…' : 'Changer l\'e-mail'"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             {{-- Changer mot de passe (collapsible) --}}
             <div x-data="{ open: false, loading: false, show0: false, show1: false, show2: false }">
                 <button type="button" @click="open = !open"
@@ -117,6 +185,49 @@
         </div>
     </div>
 
+    {{-- Informations du profil administrateur --}}
+    <form action="/admin/profil" method="POST" x-data="{ loading: false }" @submit="loading = true">
+        @csrf
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-5">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h2 class="text-sm font-bold text-gray-900">Informations du profil</h2>
+                <p class="text-xs text-gray-400 mt-0.5">Votre identité visible sur la plateforme</p>
+            </div>
+            <div class="px-6 py-5 space-y-4">
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Nom complet</label>
+                    <input type="text" name="name" value="{{ $profile['name'] ?? '' }}"
+                           placeholder="Votre nom complet"
+                           class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 focus:bg-white transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Téléphone</label>
+                    <input type="tel" name="phone" value="{{ $profile['phone'] ?? '' }}"
+                           placeholder="+212 6 00 00 00 00"
+                           class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 focus:bg-white transition-all">
+                </div>
+
+            </div>
+        </div>
+
+        <div class="flex justify-end mb-5">
+            <button type="submit" :disabled="loading"
+                    class="inline-flex items-center gap-2 text-sm font-semibold text-white px-6 py-3 rounded-xl shadow-sm transition-all hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+                    style="background: linear-gradient(135deg, #0d2150, #0f3460);">
+                <svg x-show="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                <svg x-show="!loading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                <span x-text="loading ? 'Enregistrement…' : 'Enregistrer les modifications'"></span>
+            </button>
+        </div>
+    </form>
+
     {{-- Notifications --}}
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100">
@@ -148,27 +259,6 @@
         </div>
     </div>
 
-    {{-- Période d'essai --}}
-    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-100">
-            <h2 class="text-sm font-bold text-gray-900">Période d'essai</h2>
-            <p class="text-xs text-gray-400 mt-0.5">Durée accordée aux nouveaux médecins lors de l'inscription</p>
-        </div>
-        <div class="px-6 py-5">
-            <div class="flex items-center gap-4">
-                <div class="flex items-center gap-3 flex-1 max-w-xs">
-                    <input type="number" value="14" min="1" max="90"
-                           class="w-24 text-center text-lg font-bold text-gray-900 border border-gray-200 rounded-xl py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 bg-gray-50 transition-all">
-                    <span class="text-sm text-gray-500 font-medium">jours d'essai gratuit</span>
-                </div>
-                <button type="button"
-                        class="text-xs font-semibold text-blue-600 border border-blue-200 bg-blue-50 hover:bg-blue-100 px-4 py-2.5 rounded-xl transition-colors">
-                    Enregistrer
-                </button>
-            </div>
-            <p class="text-xs text-gray-400 mt-3">Les nouveaux inscrits bénéficient de <strong class="text-gray-600">14 jours</strong> d'accès gratuit au plan Starter.</p>
-        </div>
-    </div>
 
 </div>
 @endsection

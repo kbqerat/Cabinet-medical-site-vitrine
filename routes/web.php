@@ -18,7 +18,7 @@ function firebaseCredentials(): array {
     if ($json) {
         return json_decode($json, true);
     }
-    return firebaseCredentials();
+    return json_decode(file_get_contents(env('FIREBASE_CREDENTIALS')), true);
 }
 
 Route::get('/', function () {
@@ -295,6 +295,100 @@ Route::middleware('doctor')->group(function () {
     Route::get('/dashboard/parametres', function () {
         try { $doctor = firestoreUser(session('firebase_uid')); } catch (\Throwable) { $doctor = []; }
         return view('auth.parametres', compact('doctor'));
+    });
+
+    Route::post('/dashboard/parametres/email', function (Request $request) {
+        $data = $request->validate([
+            'current_password' => 'required|string',
+            'new_email'        => 'required|email|max:150',
+        ]);
+
+        $apiKey = env('FIREBASE_WEB_API_KEY');
+
+        $check = \Illuminate\Support\Facades\Http::withOptions(httpOptions())
+            ->post("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={$apiKey}", [
+                'email'             => session('firebase_email'),
+                'password'          => $data['current_password'],
+                'returnSecureToken' => true,
+            ]);
+
+        if ($check->failed() || isset($check->json()['error'])) {
+            return back()->with('error', 'Mot de passe actuel incorrect.');
+        }
+
+        $idToken = $check->json()['idToken'];
+
+        $update = \Illuminate\Support\Facades\Http::withOptions(httpOptions())
+            ->post("https://identitytoolkit.googleapis.com/v1/accounts:update?key={$apiKey}", [
+                'idToken'           => $idToken,
+                'email'             => $data['new_email'],
+                'returnSecureToken' => true,
+            ]);
+
+        if ($update->failed() || isset($update->json()['error'])) {
+            $msg = $update->json()['error']['message'] ?? '';
+            $message = match(true) {
+                str_contains($msg, 'EMAIL_EXISTS')  => 'Cette adresse e-mail est déjà utilisée par un autre compte.',
+                str_contains($msg, 'INVALID_EMAIL') => 'Adresse e-mail invalide.',
+                default                              => 'Erreur lors du changement d\'e-mail. Réessayez.',
+            };
+            return back()->with('error', $message);
+        }
+
+        try {
+            $uid   = session('firebase_uid');
+            $token = firestoreToken();
+            $mask  = 'updateMask.fieldPaths=email';
+            \Illuminate\Support\Facades\Http::withToken($token)->patch(
+                "https://firestore.googleapis.com/v1/projects/mediassist-d494a/databases/(default)/documents/users/{$uid}?{$mask}",
+                ['fields' => ['email' => ['stringValue' => $data['new_email']]]]
+            );
+        } catch (\Throwable) {}
+
+        session(['firebase_email' => $data['new_email'], 'firebase_id_token' => $update->json()['idToken']]);
+
+        return back()->with('success', 'Adresse e-mail mise à jour avec succès.');
+    });
+
+    Route::post('/dashboard/parametres/delete', function (Request $request) {
+        $data = $request->validate([
+            'email_confirm' => 'required|string',
+            'password'      => 'required|string',
+        ]);
+
+        if ($data['email_confirm'] !== session('firebase_email')) {
+            return back()->with('error', 'L\'adresse e-mail saisie ne correspond pas à votre compte.');
+        }
+
+        $apiKey = env('FIREBASE_WEB_API_KEY');
+
+        $check = \Illuminate\Support\Facades\Http::withOptions(httpOptions())
+            ->post("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={$apiKey}", [
+                'email'             => session('firebase_email'),
+                'password'          => $data['password'],
+                'returnSecureToken' => true,
+            ]);
+
+        if ($check->failed() || isset($check->json()['error'])) {
+            return back()->with('error', 'Mot de passe incorrect. Suppression annulée.');
+        }
+
+        $idToken = $check->json()['idToken'];
+        $uid     = session('firebase_uid');
+
+        try {
+            $token = firestoreToken();
+            \Illuminate\Support\Facades\Http::withToken($token)
+                ->delete("https://firestore.googleapis.com/v1/projects/mediassist-d494a/databases/(default)/documents/users/{$uid}");
+        } catch (\Throwable) {}
+
+        \Illuminate\Support\Facades\Http::withOptions(httpOptions())
+            ->post("https://identitytoolkit.googleapis.com/v1/accounts:delete?key={$apiKey}", [
+                'idToken' => $idToken,
+            ]);
+
+        session()->flush();
+        return redirect('/')->with('success', 'Votre compte a été supprimé définitivement.');
     });
 
     Route::post('/dashboard/parametres/password', function (Request $request) {
@@ -601,17 +695,110 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         }
     })->name('admin.messages');
 
+    Route::get('/profil', function () {
+        $profile = [];
+        try {
+            $token    = firestoreToken();
+            $response = \Illuminate\Support\Facades\Http::withToken($token)
+                ->get('https://firestore.googleapis.com/v1/projects/mediassist-d494a/databases/(default)/documents/config/admin_profile');
+            $fields = $response->json()['fields'] ?? [];
+            foreach ($fields as $key => $val) {
+                $profile[$key] = array_values($val)[0] ?? null;
+            }
+        } catch (\Throwable) {}
+        return view('admin.profil', compact('profile'));
+    })->name('admin.profil');
+
+    Route::post('/profil', function (Request $request) {
+        $data = $request->validate([
+            'name'  => 'nullable|string|max:100',
+            'phone' => 'nullable|string|max:30',
+        ]);
+
+        $token  = firestoreToken();
+        $fields = [];
+        foreach ($data as $k => $v) {
+            $fields[$k] = ['stringValue' => (string) ($v ?? '')];
+        }
+        $mask = implode('&', array_map(fn($k) => 'updateMask.fieldPaths=' . urlencode($k), array_keys($fields)));
+
+        \Illuminate\Support\Facades\Http::withToken($token)->patch(
+            "https://firestore.googleapis.com/v1/projects/mediassist-d494a/databases/(default)/documents/config/admin_profile?{$mask}",
+            ['fields' => $fields]
+        );
+
+        return back()->with('success', 'Profil mis à jour avec succès.');
+    });
+
     Route::get('/parametres', function () {
         $firebaseOk    = false;
         $totalDoctors  = 0;
+        $profile       = [];
         try {
             $doctors      = firestoreUsers();
             $totalDoctors = count($doctors);
             $firebaseOk   = true;
         } catch (\Throwable) {}
+        try {
+            $token    = firestoreToken();
+            $response = \Illuminate\Support\Facades\Http::withToken($token)
+                ->get('https://firestore.googleapis.com/v1/projects/mediassist-d494a/databases/(default)/documents/config/admin_profile');
+            $fields = $response->json()['fields'] ?? [];
+            foreach ($fields as $key => $val) {
+                $profile[$key] = array_values($val)[0] ?? null;
+            }
+        } catch (\Throwable) {}
 
-        return view('admin.parametres', compact('firebaseOk', 'totalDoctors'));
+        return view('admin.parametres', compact('firebaseOk', 'totalDoctors', 'profile'));
     })->name('admin.parametres');
+
+    Route::post('/parametres/email', function (Request $request) {
+        $data = $request->validate([
+            'current_password' => 'required|string',
+            'new_email'        => 'required|email|max:150',
+        ]);
+
+        $apiKey = env('FIREBASE_WEB_API_KEY');
+
+        $check = \Illuminate\Support\Facades\Http::withOptions(httpOptions())
+            ->post("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={$apiKey}", [
+                'email'             => env('ADMIN_EMAIL'),
+                'password'          => $data['current_password'],
+                'returnSecureToken' => true,
+            ]);
+
+        if ($check->failed() || isset($check->json()['error'])) {
+            return back()->with('error', 'Mot de passe actuel incorrect.');
+        }
+
+        $idToken = $check->json()['idToken'];
+
+        $update = \Illuminate\Support\Facades\Http::withOptions(httpOptions())
+            ->post("https://identitytoolkit.googleapis.com/v1/accounts:update?key={$apiKey}", [
+                'idToken'           => $idToken,
+                'email'             => $data['new_email'],
+                'returnSecureToken' => true,
+            ]);
+
+        if ($update->failed() || isset($update->json()['error'])) {
+            $msg = $update->json()['error']['message'] ?? '';
+            $message = match(true) {
+                str_contains($msg, 'EMAIL_EXISTS')  => 'Cette adresse e-mail est déjà utilisée.',
+                str_contains($msg, 'INVALID_EMAIL') => 'Adresse e-mail invalide.',
+                default                              => 'Erreur lors du changement d\'e-mail.',
+            };
+            return back()->with('error', $message);
+        }
+
+        $envFile    = base_path('.env');
+        $envContent = file_get_contents($envFile);
+        $envContent = preg_replace('/^ADMIN_EMAIL=.*/m', 'ADMIN_EMAIL=' . $data['new_email'], $envContent);
+        file_put_contents($envFile, $envContent);
+
+        session(['firebase_email' => $data['new_email'], 'firebase_id_token' => $update->json()['idToken']]);
+
+        return back()->with('success', 'E-mail administrateur mis à jour. Reconnectez-vous pour finaliser.');
+    });
 
     Route::post('/parametres/password', function (Request $request, \Kreait\Firebase\Contract\Auth $auth) {
         $data = $request->validate([

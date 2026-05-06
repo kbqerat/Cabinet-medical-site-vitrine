@@ -27,6 +27,71 @@
                 </div>
             </div>
 
+            {{-- Changer l'adresse e-mail (collapsible) --}}
+            <div x-data="{ open: false, loading: false, showPass: false }">
+                <button type="button" @click="open = !open"
+                        class="flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors group">
+                    <div class="w-6 h-6 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors">
+                        <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="open ? 'rotate-45' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                        </svg>
+                    </div>
+                    <span x-text="open ? 'Annuler' : 'Changer l\'adresse e-mail'"></span>
+                </button>
+                <div x-show="open" x-cloak
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 -translate-y-2"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 -translate-y-2"
+                     class="mt-4">
+                    <form action="/dashboard/parametres/email" method="POST" @submit="loading = true">
+                        @csrf
+                        <div class="space-y-3">
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                <input type="email" name="new_email" required
+                                       placeholder="Nouvelle adresse e-mail"
+                                       class="w-full pl-10 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 focus:bg-white transition-all">
+                            </div>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                    </svg>
+                                </div>
+                                <input :type="showPass ? 'text' : 'password'" name="current_password" required
+                                       placeholder="Mot de passe actuel (pour confirmer)"
+                                       class="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 focus:bg-white transition-all">
+                                <button type="button" @click="showPass = !showPass" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-300 hover:text-gray-500 transition-colors">
+                                    <svg x-show="!showPass" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    <svg x-show="showPass" x-cloak class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button type="submit" :disabled="loading"
+                                    class="inline-flex items-center gap-2 text-sm font-semibold text-white px-5 py-2.5 rounded-xl shadow-sm transition-all hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+                                    style="background: linear-gradient(135deg, #0d2150, #0f3460);">
+                                <svg x-show="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                </svg>
+                                <svg x-show="!loading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                                <span x-text="loading ? 'Mise à jour…' : 'Changer l\'e-mail'"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             {{-- Changer mot de passe (collapsible) --}}
             <div x-data="{ open: false, loading: false, show0: false, show1: false, show2: false }">
                 <button type="button" @click="open = !open"
@@ -117,6 +182,88 @@
         </div>
     </div>
 
+    {{-- Informations du profil --}}
+    <form action="/dashboard/profil" method="POST" x-data="{ loading: false }" @submit="loading = true">
+        @csrf
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-5">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h2 class="text-sm font-bold text-gray-900">Informations personnelles</h2>
+                <p class="text-xs text-gray-400 mt-0.5">Votre identité professionnelle visible sur votre profil</p>
+            </div>
+            <div class="px-6 py-5 space-y-4">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Prénom</label>
+                        <input type="text" name="first_name" value="{{ $doctor['first_name'] ?? '' }}"
+                               placeholder="Votre prénom"
+                               class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 focus:bg-white transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Nom</label>
+                        <input type="text" name="last_name" value="{{ $doctor['last_name'] ?? '' }}"
+                               placeholder="Votre nom"
+                               class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 focus:bg-white transition-all">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Téléphone</label>
+                    <input type="tel" name="phone" value="{{ $doctor['phone'] ?? '' }}"
+                           placeholder="+212 6 00 00 00 00"
+                           class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 focus:bg-white transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Spécialité</label>
+                    <input type="text" name="specialty" value="{{ $doctor['specialty'] ?? '' }}"
+                           placeholder="ex. Médecine générale, Cardiologie…"
+                           class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 focus:bg-white transition-all">
+                </div>
+
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-5">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h2 class="text-sm font-bold text-gray-900">Cabinet médical</h2>
+                <p class="text-xs text-gray-400 mt-0.5">Informations sur votre lieu d'exercice</p>
+            </div>
+            <div class="px-6 py-5 space-y-4">
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Nom du cabinet</label>
+                    <input type="text" name="cabinet_name" value="{{ $doctor['cabinet_name'] ?? '' }}"
+                           placeholder="ex. Cabinet du Dr Dupont"
+                           class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 focus:bg-white transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Ville</label>
+                    <input type="text" name="city" value="{{ $doctor['city'] ?? '' }}"
+                           placeholder="ex. Casablanca, Rabat…"
+                           class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 focus:bg-white transition-all">
+                </div>
+
+            </div>
+        </div>
+
+        <div class="flex justify-end mb-5">
+            <button type="submit" :disabled="loading"
+                    class="inline-flex items-center gap-2 text-sm font-semibold text-white px-6 py-3 rounded-xl shadow-sm transition-all hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+                    style="background: linear-gradient(135deg, #0d2150, #0f3460);">
+                <svg x-show="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                <svg x-show="!loading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                <span x-text="loading ? 'Enregistrement…' : 'Enregistrer les modifications'"></span>
+            </button>
+        </div>
+    </form>
+
     {{-- Notifications --}}
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100">
@@ -149,7 +296,14 @@
     </div>
 
     {{-- Danger --}}
-    <div class="bg-white rounded-2xl border border-red-100 shadow-sm overflow-hidden">
+    <div class="bg-white rounded-2xl border border-red-100 shadow-sm overflow-hidden"
+         x-data="{
+             showModal: false,
+             emailInput: '',
+             passInput: '',
+             loading: false,
+             get canDelete() { return this.emailInput === '{{ addslashes(session('firebase_email')) }}' && this.passInput.length >= 1; }
+         }">
         <div class="px-6 py-4 border-b border-red-50">
             <h2 class="text-sm font-bold text-red-700">Zone de danger</h2>
             <p class="text-xs text-red-400 mt-0.5">Ces actions sont irréversibles, procédez avec précaution</p>
@@ -160,10 +314,87 @@
                     <p class="text-sm font-semibold text-gray-800">Supprimer mon compte</p>
                     <p class="text-xs text-gray-400 mt-0.5">Toutes vos données seront définitivement supprimées</p>
                 </div>
-                <a href="/#contact"
-                   class="flex-shrink-0 text-xs font-semibold text-red-500 border border-red-200 hover:border-red-300 hover:bg-red-50 bg-white px-4 py-2.5 rounded-xl transition-colors ml-4">
-                    Contacter le support
-                </a>
+                <button type="button" @click="showModal = true"
+                        class="flex-shrink-0 text-xs font-semibold text-red-500 border border-red-200 hover:border-red-300 hover:bg-red-50 bg-white px-4 py-2.5 rounded-xl transition-colors ml-4">
+                    Supprimer mon compte
+                </button>
+            </div>
+        </div>
+
+        {{-- Modal de confirmation style GitHub --}}
+        <div x-show="showModal" x-cloak
+             class="fixed inset-0 z-50 flex items-center justify-center p-4"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0">
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                 @click="showModal = false; emailInput = ''; passInput = ''"></div>
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 scale-100"
+                 x-transition:leave-end="opacity-0 scale-95">
+                {{-- Header --}}
+                <div class="flex items-center justify-between px-6 py-4 border-b border-red-100 bg-red-50/50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-red-100 rounded-xl flex items-center justify-center">
+                            <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-bold text-gray-900">Supprimer mon compte</h3>
+                    </div>
+                    <button @click="showModal = false; emailInput = ''; passInput = ''"
+                            class="text-gray-300 hover:text-gray-500 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                {{-- Body --}}
+                <div class="px-6 py-5">
+                    <div class="bg-red-50 border border-red-100 rounded-xl p-4 mb-5">
+                        <p class="text-xs text-red-700 leading-relaxed">
+                            Cette action est <strong>permanente et irréversible</strong>. Votre compte, votre profil et tous vos accès à MediAssist seront définitivement supprimés.
+                        </p>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-1.5">Pour confirmer, saisissez votre adresse e-mail :</p>
+                    <p class="text-xs font-mono font-bold text-gray-800 bg-gray-100 rounded-lg px-3 py-2 mb-4 select-all">{{ session('firebase_email') }}</p>
+                    <form action="/dashboard/parametres/delete" method="POST"
+                          @submit.prevent="if(canDelete && !loading) { loading = true; $el.submit(); }">
+                        @csrf
+                        <div class="space-y-3">
+                            <input type="text" name="email_confirm" x-model="emailInput"
+                                   required autocomplete="off" spellcheck="false"
+                                   placeholder="votre@email.com"
+                                   class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 focus:bg-white transition-all font-mono">
+                            <input type="password" name="password" x-model="passInput" required
+                                   placeholder="Mot de passe"
+                                   class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 focus:bg-white transition-all">
+                        </div>
+                        <div class="mt-5 flex gap-3">
+                            <button type="button"
+                                    @click="showModal = false; emailInput = ''; passInput = ''"
+                                    class="flex-1 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 px-4 py-2.5 rounded-xl transition-colors">
+                                Annuler
+                            </button>
+                            <button type="submit" :disabled="!canDelete || loading"
+                                    :class="canDelete && !loading ? 'bg-red-600 hover:bg-red-700' : 'bg-red-300 cursor-not-allowed'"
+                                    class="flex-1 inline-flex items-center justify-center gap-2 text-sm font-semibold text-white px-4 py-2.5 rounded-xl transition-colors">
+                                <svg x-show="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                </svg>
+                                <span x-text="loading ? 'Suppression…' : 'Supprimer définitivement'"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

@@ -413,6 +413,28 @@ $toggleOkClass   = $isNavy ? 'bg-blue-50 border-blue-200 text-blue-600'
 
 </div>
 
+{{-- Période d'essai --}}
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-5">
+    <div class="px-6 py-4 border-b border-gray-100">
+        <h2 class="text-sm font-bold text-gray-900">Période d'essai</h2>
+        <p class="text-xs text-gray-400 mt-0.5">Durée accordée aux nouveaux médecins lors de l'inscription</p>
+    </div>
+    <div class="px-6 py-5">
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3 flex-1 max-w-xs">
+                <input type="number" value="14" min="1" max="90"
+                       class="w-24 text-center text-lg font-bold text-gray-900 border border-gray-200 rounded-xl py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 bg-gray-50 transition-all">
+                <span class="text-sm text-gray-500 font-medium">jours d'essai gratuit</span>
+            </div>
+            <button type="button"
+                    class="text-xs font-semibold text-blue-600 border border-blue-200 bg-blue-50 hover:bg-blue-100 px-4 py-2.5 rounded-xl transition-colors">
+                Enregistrer
+            </button>
+        </div>
+        <p class="text-xs text-gray-400 mt-3">Les nouveaux inscrits bénéficient de <strong class="text-gray-600">14 jours</strong> d'accès gratuit au plan Starter.</p>
+    </div>
+</div>
+
 {{-- Table avec filtres --}}
 <div id="table-section" x-data="{ filter: 'all' }" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-100">
