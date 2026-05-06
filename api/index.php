@@ -1,6 +1,11 @@
 <?php
 
-// Vercel : seul /tmp est writable — créer les dossiers nécessaires à Laravel
+use Illuminate\Foundation\Application;
+use Illuminate\Http\Request;
+
+define('LARAVEL_START', microtime(true));
+
+// Vercel: only /tmp is writable
 $storagePath = '/tmp/laravel-storage';
 $cachePath   = '/tmp/laravel-cache';
 
@@ -19,21 +24,20 @@ foreach ([
     }
 }
 
-// Injecter les chemins dans l'environnement avant le boot Laravel
 putenv("LARAVEL_STORAGE_PATH=$storagePath");
 putenv("LARAVEL_BOOTSTRAP_CACHE=$cachePath");
-$_ENV['LARAVEL_STORAGE_PATH']    = $storagePath;
-$_ENV['LARAVEL_BOOTSTRAP_CACHE'] = $cachePath;
+$_ENV['LARAVEL_STORAGE_PATH']       = $storagePath;
+$_ENV['LARAVEL_BOOTSTRAP_CACHE']    = $cachePath;
 $_SERVER['LARAVEL_STORAGE_PATH']    = $storagePath;
 $_SERVER['LARAVEL_BOOTSTRAP_CACHE'] = $cachePath;
 
-try {
-    require __DIR__ . '/../public/index.php';
-} catch (\Throwable $e) {
-    error_log('[VERCEL-BOOT] ' . get_class($e) . ': ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
-    http_response_code(500);
-    header('Content-Type: text/plain');
-    echo get_class($e) . ': ' . $e->getMessage() . "\n\n";
-    echo 'File: ' . $e->getFile() . ':' . $e->getLine() . "\n\n";
-    echo $e->getTraceAsString();
+if (file_exists($maintenance = $storagePath . '/framework/maintenance.php')) {
+    require $maintenance;
 }
+
+require __DIR__ . '/../vendor/autoload.php';
+
+/** @var Application $app */
+$app = require_once __DIR__ . '/../bootstrap/app.php';
+
+$app->handleRequest(Request::capture());

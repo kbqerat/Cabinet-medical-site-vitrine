@@ -8,3 +8,4 @@ storage/app
 *.local
 README.md
 phpunit.xml
+public/index.php
