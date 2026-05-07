@@ -228,13 +228,16 @@
         </div>
     </form>
 
-    {{-- Notifications --}}
-    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-100">
-            <h2 class="text-sm font-bold text-gray-900">Notifications</h2>
-            <p class="text-xs text-gray-400 mt-0.5">Choisissez les événements pour lesquels vous souhaitez être notifié</p>
+    {{-- Notifications (désactivé) --}}
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden opacity-60">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div>
+                <h2 class="text-sm font-bold text-gray-900">Notifications</h2>
+                <p class="text-xs text-gray-400 mt-0.5">Choisissez les événements pour lesquels vous souhaitez être notifié</p>
+            </div>
+            <span class="text-[10px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">Bientôt disponible</span>
         </div>
-        <div class="divide-y divide-gray-50">
+        <div class="divide-y divide-gray-50 pointer-events-none select-none">
             @php
             $notifs = [
                 ['label' => 'Nouvelle inscription médecin', 'sub' => 'Reçois un email à chaque nouveau compte créé',      'default' => true],
@@ -243,17 +246,14 @@
             ];
             @endphp
             @foreach($notifs as $n)
-            <div class="flex items-center justify-between px-6 py-4" x-data="{ on: {{ $n['default'] ? 'true' : 'false' }} }">
+            <div class="flex items-center justify-between px-6 py-4">
                 <div>
                     <p class="text-sm font-medium text-gray-800">{{ $n['label'] }}</p>
                     <p class="text-xs text-gray-400 mt-0.5">{{ $n['sub'] }}</p>
                 </div>
-                <button @click="on = !on" type="button"
-                        :class="on ? 'bg-blue-600' : 'bg-gray-200'"
-                        class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none flex-shrink-0 ml-4">
-                    <span :class="on ? 'translate-x-4' : 'translate-x-0.5'"
-                          class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200"></span>
-                </button>
+                <div class="relative inline-flex h-5 w-9 items-center rounded-full bg-gray-200 flex-shrink-0 ml-4">
+                    <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow translate-x-0.5"></span>
+                </div>
             </div>
             @endforeach
         </div>

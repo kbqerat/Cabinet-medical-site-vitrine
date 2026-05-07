@@ -15,6 +15,7 @@ $roleColor   = $isAdmin
 $avatarBg    = $isAdmin
     ? 'background: linear-gradient(135deg, #312e81, #4338ca)'
     : 'background: linear-gradient(135deg, #0f2460, #1d4ed8)';
+$photoUrl    = (!$isAdmin && $isLoggedIn) ? session('firebase_photo_url', '') : '';
 @endphp
 
 <nav x-data="{ open: false, scrolled: false, loginOpen: false, profileOpen: false, mobileLogin: false, mobileProfile: false }"
@@ -85,10 +86,12 @@ $avatarBg    = $isAdmin
                                 ? '{{ $isAdmin ? 'bg-indigo-50 border-indigo-200' : 'bg-blue-50 border-blue-200' }}'
                                 : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'">
                         {{-- Avatar --}}
+                        @if($photoUrl)
+                        <img src="{{ $photoUrl }}" alt="" class="w-7 h-7 rounded-lg object-cover shrink-0">
+                        @else
                         <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0"
-                             style="{{ $avatarBg }}">
-                            {{ $initials }}
-                        </div>
+                             style="{{ $avatarBg }}">{{ $initials }}</div>
+                        @endif
                         <span class="text-sm font-medium text-gray-700 max-w-[100px] truncate">{{ $shortName }}</span>
                         <svg class="w-3.5 h-3.5 text-gray-400 transition-transform duration-200" :class="profileOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
@@ -107,10 +110,12 @@ $avatarBg    = $isAdmin
 
                         {{-- Header profil --}}
                         <div class="px-4 py-4 border-b border-gray-100 flex items-center gap-3">
+                            @if($photoUrl)
+                            <img src="{{ $photoUrl }}" alt="" class="w-10 h-10 rounded-xl object-cover shrink-0">
+                            @else
                             <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0"
-                                 style="{{ $avatarBg }}">
-                                {{ $initials }}
-                            </div>
+                                 style="{{ $avatarBg }}">{{ $initials }}</div>
+                            @endif
                             <div class="flex-1 min-w-0">
                                 <div class="text-sm font-semibold text-gray-900 truncate">{{ $shortName }}</div>
                                 <div class="text-xs text-gray-400 truncate">{{ $userEmail }}</div>
@@ -252,10 +257,12 @@ $avatarBg    = $isAdmin
                 <button @click="mobileProfile = !mobileProfile; open = false"
                         class="flex items-center gap-2 border rounded-xl px-2 py-1.5 pr-3 transition-all duration-200"
                         :class="mobileProfile ? '{{ $isAdmin ? 'border-indigo-200 bg-indigo-50' : 'border-blue-200 bg-blue-50' }}' : 'border-gray-200 bg-white'">
+                    @if($photoUrl)
+                    <img src="{{ $photoUrl }}" alt="" class="w-7 h-7 rounded-lg object-cover">
+                    @else
                     <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold"
-                         style="{{ $avatarBg }}">
-                        {{ $initials }}
-                    </div>
+                         style="{{ $avatarBg }}">{{ $initials }}</div>
+                    @endif
                     <svg class="w-3 h-3 text-gray-400 transition-transform duration-200" :class="mobileProfile ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
                     </svg>
@@ -347,10 +354,12 @@ $avatarBg    = $isAdmin
 
         {{-- Info utilisateur --}}
         <div class="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100">
+            @if($photoUrl)
+            <img src="{{ $photoUrl }}" alt="" class="w-12 h-12 rounded-2xl object-cover shrink-0">
+            @else
             <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-white text-base font-bold shrink-0"
-                 style="{{ $avatarBg }}">
-                {{ $initials }}
-            </div>
+                 style="{{ $avatarBg }}">{{ $initials }}</div>
+            @endif
             <div class="flex-1 min-w-0">
                 <div class="text-sm font-bold text-gray-900 truncate">{{ $shortName }}</div>
                 <div class="text-xs text-gray-400 truncate">{{ $userEmail }}</div>

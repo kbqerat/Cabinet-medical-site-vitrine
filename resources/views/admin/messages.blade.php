@@ -43,7 +43,7 @@
     search: '',
     tab: 'all',
     page: 1,
-    perPage: 5,
+    perPage: 3,
     selected: null,
     messages: {{ json_encode($messages) }},
     get filtered() {
@@ -62,16 +62,7 @@
     get totalPages() {
         return Math.max(1, Math.ceil(this.filtered.length / this.perPage));
     },
-    get pageNumbers() {
-        const total = this.totalPages;
-        const cur   = this.page;
-        if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-        const pages = new Set([1, total, cur]);
-        if (cur > 1) pages.add(cur - 1);
-        if (cur < total) pages.add(cur + 1);
-        return [...pages].sort((a, b) => a - b);
-    },
-    setTab(t) { this.tab = t; this.page = 1; this.selected = null; },
+setTab(t) { this.tab = t; this.page = 1; this.selected = null; },
     setSearch(v) { this.search = v; this.page = 1; },
     counts: {
         all:     {{ count($messages) }},
@@ -161,44 +152,49 @@
             </template>
 
             {{-- Pagination --}}
-            <div x-show="totalPages > 1" class="flex items-center justify-between pt-1">
-                <button @click="page = Math.max(1, page - 1)" :disabled="page === 1"
-                        class="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 bg-white border border-gray-200 px-3 py-2 rounded-xl hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                    </svg>
-                    Préc.
-                </button>
-
+            <div class="flex items-center justify-between pt-1 px-1">
+                <p class="text-xs text-gray-400">
+                    Page <span class="font-semibold text-gray-700" x-text="page"></span>
+                    sur <span class="font-semibold text-gray-700" x-text="totalPages"></span>
+                    &nbsp;·&nbsp;
+                    <span x-text="filtered.length"></span> message<span x-show="filtered.length !== 1">s</span>
+                </p>
                 <div class="flex items-center gap-1">
-                    <template x-for="(p, idx) in pageNumbers" :key="idx">
-                        <template x-if="idx > 0 && pageNumbers[idx] - pageNumbers[idx-1] > 1">
-                            <span class="text-xs text-gray-300 px-1">…</span>
-                        </template>
+                    <button @click="page = 1" :disabled="page === 1"
+                            :style="page === 1 ? 'opacity:0.35;cursor:default' : ''"
+                            class="w-8 h-8 rounded-lg border border-gray-200 bg-white flex items-center justify-center hover:bg-gray-50 transition-colors">
+                        <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7M19 19l-7-7 7-7"/>
+                        </svg>
+                    </button>
+                    <button @click="if(page > 1) page--" :disabled="page === 1"
+                            :style="page === 1 ? 'opacity:0.35;cursor:default' : ''"
+                            class="w-8 h-8 rounded-lg border border-gray-200 bg-white flex items-center justify-center hover:bg-gray-50 transition-colors">
+                        <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                    </button>
+                    <template x-for="p in Array.from({length: totalPages}, (_, i) => i + 1).filter(p => Math.abs(p - page) <= 2)" :key="p">
                         <button @click="page = p; selected = null"
-                                :class="page === p
-                                    ? 'bg-gray-900 text-white'
-                                    : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'"
-                                class="w-8 h-8 text-xs font-bold rounded-lg transition-all"
+                                :style="page === p ? 'background:#0d2150;color:white;border-color:#0d2150' : ''"
+                                class="w-8 h-8 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-600 flex items-center justify-center hover:bg-gray-50 transition-colors"
                                 x-text="p"></button>
                     </template>
+                    <button @click="if(page < totalPages) page++" :disabled="page === totalPages"
+                            :style="page === totalPages ? 'opacity:0.35;cursor:default' : ''"
+                            class="w-8 h-8 rounded-lg border border-gray-200 bg-white flex items-center justify-center hover:bg-gray-50 transition-colors">
+                        <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </button>
+                    <button @click="page = totalPages" :disabled="page === totalPages"
+                            :style="page === totalPages ? 'opacity:0.35;cursor:default' : ''"
+                            class="w-8 h-8 rounded-lg border border-gray-200 bg-white flex items-center justify-center hover:bg-gray-50 transition-colors">
+                        <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+                        </svg>
+                    </button>
                 </div>
-
-                <button @click="page = Math.min(totalPages, page + 1)" :disabled="page === totalPages"
-                        class="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 bg-white border border-gray-200 px-3 py-2 rounded-xl hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
-                    Suiv.
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                    </svg>
-                </button>
-            </div>
-
-            {{-- Info pagination --}}
-            <div x-show="totalPages > 1" class="text-center">
-                <p class="text-[10px] text-gray-300">
-                    Page <span x-text="page"></span> / <span x-text="totalPages"></span>
-                    · <span x-text="filtered.length"></span> messages
-                </p>
             </div>
 
         </div>

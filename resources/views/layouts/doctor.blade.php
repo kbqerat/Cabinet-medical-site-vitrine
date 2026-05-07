@@ -19,7 +19,7 @@
             type: '{{ session('error') ? 'error' : 'success' }}',
             message: '{{ addslashes(session('error') ?? session('success')) }}'
          }"
-         x-init="setTimeout(() => show = false, 4000)"
+         x-init="setTimeout(() => show = false, message.length > 60 ? 7000 : 4000)"
          x-show="show" x-cloak
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0 translate-y-2 scale-95"
@@ -116,10 +116,15 @@
 
                 <button @click="open = !open" type="button"
                         class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-white/10 transition-all group">
+                    @if(session('firebase_photo_url'))
+                    <img src="{{ session('firebase_photo_url') }}" alt=""
+                         class="w-7 h-7 rounded-lg object-cover flex-shrink-0">
+                    @else
                     <div class="w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0"
                          style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
                         {{ strtoupper(substr(session('firebase_email', 'D'), 0, 1)) }}
                     </div>
+                    @endif
                     <div class="min-w-0 flex-1 text-left">
                         @php
                         $displayName = isset($doctor) && !empty($doctor['first_name'])

@@ -183,7 +183,33 @@
     </div>
 
     {{-- Informations du profil --}}
-    <form action="/dashboard/profil" method="POST" x-data="{ loading: false }" @submit="loading = true">
+    <form action="/dashboard/profil" method="POST"
+          x-data="{
+              loading: false,
+              photoPreview: null,
+              photoBase64: '',
+              setPhoto(e) {
+                  const f = e.target.files[0];
+                  if (!f) return;
+                  this.photoPreview = URL.createObjectURL(f);
+                  const img = new Image();
+                  const reader = new FileReader();
+                  reader.onload = ev => {
+                      img.onload = () => {
+                          const size = 300;
+                          const ratio = Math.min(size / img.width, size / img.height, 1);
+                          const canvas = document.createElement('canvas');
+                          canvas.width  = Math.round(img.width  * ratio);
+                          canvas.height = Math.round(img.height * ratio);
+                          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                          this.photoBase64 = canvas.toDataURL('image/jpeg', 0.82);
+                      };
+                      img.src = ev.target.result;
+                  };
+                  reader.readAsDataURL(f);
+              }
+          }"
+          @submit="loading = true">
         @csrf
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-5">
             <div class="px-6 py-4 border-b border-gray-100">
@@ -248,6 +274,101 @@
             </div>
         </div>
 
+        {{-- Informations supplémentaires --}}
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-5">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h2 class="text-sm font-bold text-gray-900">Informations supplémentaires</h2>
+                <p class="text-xs text-gray-400 mt-0.5">Bio, photo et présence en ligne</p>
+            </div>
+            <div class="px-6 py-5 space-y-5">
+
+                {{-- Photo de profil --}}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Photo de profil</label>
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-xl overflow-hidden border-2 border-dashed border-gray-200 bg-gray-50 flex items-center justify-center flex-shrink-0 transition-all"
+                             :class="photoPreview ? 'border-blue-300' : ''">
+                            <img x-show="photoPreview" :src="photoPreview" class="w-full h-full object-cover" x-cloak>
+                            @if($doctor['photo_url'] ?? '')
+                            <img x-show="!photoPreview" src="{{ $doctor['photo_url'] }}" class="w-full h-full object-cover">
+                            @else
+                            <svg x-show="!photoPreview" class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            @endif
+                        </div>
+                        <label class="flex-1 cursor-pointer">
+                            <div class="border border-dashed border-gray-200 rounded-xl px-4 py-3 text-center hover:border-blue-300 hover:bg-blue-50/30 transition-all">
+                                @php $photoLabel = ($doctor['photo_url'] ?? '') ? 'Remplacer la photo' : 'Choisir une photo'; @endphp
+                                <p class="text-xs font-semibold text-gray-500" x-text="photoPreview ? 'Changer la photo' : '{{ $photoLabel }}'"></p>
+                                <p class="text-[10px] text-gray-300 mt-0.5">JPG, PNG, WEBP · max 2 Mo</p>
+                            </div>
+                            <input type="file" accept="image/jpeg,image/png,image/webp"
+                                   class="hidden" @change="setPhoto($event)">
+                        </label>
+                        <input type="hidden" name="photo_base64" :value="photoBase64">
+                    </div>
+                </div>
+
+                {{-- Bio --}}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Biographie</label>
+                    <textarea name="bio" rows="3"
+                              placeholder="Votre parcours, votre expérience, votre approche..."
+                              class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 focus:bg-white transition-all resize-none">{{ $doctor['bio'] ?? '' }}</textarea>
+                </div>
+
+                {{-- Réseaux sociaux --}}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Réseaux sociaux</label>
+                    <div class="space-y-2">
+                        <div class="flex items-center border border-gray-200 rounded-xl overflow-hidden bg-gray-50/50 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:bg-white transition-all">
+                            <div class="flex items-center justify-center w-11 h-10 flex-shrink-0" style="background:#0A66C2">
+                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                            </div>
+                            <div class="w-px h-6 bg-gray-200 flex-shrink-0"></div>
+                            <input type="url" name="linkedin" value="{{ $doctor['linkedin'] ?? '' }}" placeholder="linkedin.com/in/votre-profil"
+                                   class="flex-1 bg-transparent px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none">
+                        </div>
+                        <div class="flex items-center border border-gray-200 rounded-xl overflow-hidden bg-gray-50/50 focus-within:border-pink-400 focus-within:ring-2 focus-within:ring-pink-500/20 focus-within:bg-white transition-all">
+                            <div class="flex items-center justify-center w-11 h-10 flex-shrink-0" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)">
+                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                            </div>
+                            <div class="w-px h-6 bg-gray-200 flex-shrink-0"></div>
+                            <input type="url" name="instagram" value="{{ $doctor['instagram'] ?? '' }}" placeholder="instagram.com/votre-compte"
+                                   class="flex-1 bg-transparent px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none">
+                        </div>
+                        <div class="flex items-center border border-gray-200 rounded-xl overflow-hidden bg-gray-50/50 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:bg-white transition-all">
+                            <div class="flex items-center justify-center w-11 h-10 flex-shrink-0" style="background:#1877F2">
+                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                            </div>
+                            <div class="w-px h-6 bg-gray-200 flex-shrink-0"></div>
+                            <input type="url" name="facebook" value="{{ $doctor['facebook'] ?? '' }}" placeholder="facebook.com/votre-page"
+                                   class="flex-1 bg-transparent px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Langues --}}
+                @php $currentLangs = array_filter(array_map('trim', explode(',', $doctor['languages'] ?? ''))); @endphp
+                <div x-data="{ selectedLangs: {{ json_encode(array_values($currentLangs)) }} }">
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Langues parlées</label>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach(['Arabe', 'Français', 'Anglais', 'Espagnol', 'Berbère', 'Allemand', 'Portugais', 'Italien'] as $lang)
+                        <button type="button"
+                                @click="selectedLangs.includes('{{ $lang }}') ? selectedLangs=selectedLangs.filter(l=>l!=='{{ $lang }}') : selectedLangs.push('{{ $lang }}')"
+                                :class="selectedLangs.includes('{{ $lang }}') ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-600'"
+                                class="text-xs font-medium px-3 py-1.5 rounded-full border transition-all duration-150">
+                            {{ $lang }}
+                        </button>
+                        @endforeach
+                    </div>
+                    <input type="hidden" name="languages" :value="selectedLangs.join(',')">
+                </div>
+
+            </div>
+        </div>
+
         <div class="flex justify-end mb-5">
             <button type="submit" :disabled="loading"
                     class="inline-flex items-center gap-2 text-sm font-semibold text-white px-6 py-3 rounded-xl shadow-sm transition-all hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
@@ -264,13 +385,16 @@
         </div>
     </form>
 
-    {{-- Notifications --}}
-    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-100">
-            <h2 class="text-sm font-bold text-gray-900">Notifications</h2>
-            <p class="text-xs text-gray-400 mt-0.5">Choisissez les événements pour lesquels vous souhaitez être notifié</p>
+    {{-- Notifications (désactivé) --}}
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden opacity-60">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div>
+                <h2 class="text-sm font-bold text-gray-900">Notifications</h2>
+                <p class="text-xs text-gray-400 mt-0.5">Choisissez les événements pour lesquels vous souhaitez être notifié</p>
+            </div>
+            <span class="text-[10px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">Bientôt disponible</span>
         </div>
-        <div class="divide-y divide-gray-50">
+        <div class="divide-y divide-gray-50 pointer-events-none select-none">
             @php
             $notifs = [
                 ['label' => 'Confirmation d\'abonnement', 'sub' => 'Reçois un email lors de tout changement de plan',         'default' => true],
@@ -279,17 +403,14 @@
             ];
             @endphp
             @foreach($notifs as $n)
-            <div class="flex items-center justify-between px-6 py-4" x-data="{ on: {{ $n['default'] ? 'true' : 'false' }} }">
+            <div class="flex items-center justify-between px-6 py-4">
                 <div>
                     <p class="text-sm font-medium text-gray-800">{{ $n['label'] }}</p>
                     <p class="text-xs text-gray-400 mt-0.5">{{ $n['sub'] }}</p>
                 </div>
-                <button @click="on = !on" type="button"
-                        :class="on ? 'bg-blue-600' : 'bg-gray-200'"
-                        class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none flex-shrink-0 ml-4">
-                    <span :class="on ? 'translate-x-4' : 'translate-x-0.5'"
-                          class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200"></span>
-                </button>
+                <div class="relative inline-flex h-5 w-9 items-center rounded-full bg-gray-200 flex-shrink-0 ml-4">
+                    <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow translate-x-0.5"></span>
+                </div>
             </div>
             @endforeach
         </div>
@@ -384,8 +505,8 @@
                                 Annuler
                             </button>
                             <button type="submit" :disabled="!canDelete || loading"
-                                    :class="canDelete && !loading ? 'bg-red-600 hover:bg-red-700' : 'bg-red-300 cursor-not-allowed'"
-                                    class="flex-1 inline-flex items-center justify-center gap-2 text-sm font-semibold text-white px-4 py-2.5 rounded-xl transition-colors">
+                                    :style="canDelete && !loading ? 'background:#991b1b' : 'background:#991b1b; opacity:0.4; cursor:not-allowed'"
+                                    class="flex-1 inline-flex items-center justify-center gap-2 text-sm font-semibold text-white px-4 py-2.5 rounded-xl transition-all">
                                 <svg x-show="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>

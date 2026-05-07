@@ -2,10 +2,10 @@
 @section('title', 'Créer un compte — MediAssist')
 
 @section('content')
-<div class="min-h-screen flex">
+<div class="flex min-h-screen">
 
     {{-- Panneau gauche --}}
-    <div class="hidden lg:flex lg:w-[45%] xl:w-[40%] flex-col relative overflow-hidden"
+    <div class="hidden lg:flex lg:w-[45%] xl:w-[40%] flex-col relative overflow-hidden flex-shrink-0 sticky top-0 h-screen overflow-y-auto"
          style="background: linear-gradient(145deg, #1e3a8a 0%, #1d4ed8 40%, #4f46e5 100%);">
 
         {{-- Dot grid --}}
@@ -16,10 +16,10 @@
         <div class="absolute -top-20 -left-20 w-72 h-72 bg-blue-400/20 rounded-full blur-3xl"></div>
         <div class="absolute bottom-0 right-0 w-80 h-80 bg-indigo-400/20 rounded-full blur-3xl"></div>
 
-        <div class="relative flex flex-col h-full px-10 py-10">
+        <div class="relative flex flex-col px-10 py-10 gap-10 min-h-full">
 
             {{-- Logo --}}
-            <a href="/" class="flex items-center gap-3 w-fit">
+            <a href="/" class="flex items-center gap-3 w-fit flex-shrink-0">
                 <div class="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -29,7 +29,7 @@
             </a>
 
             {{-- Contenu central --}}
-            <div class="flex-1 flex flex-col justify-center">
+            <div class="flex-1">
                 <div class="mb-10">
                     <span class="inline-flex items-center gap-2 bg-white/10 text-blue-100 text-xs font-bold px-3 py-1.5 rounded-full mb-6">
                         <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
@@ -88,7 +88,7 @@
     </div>
 
     {{-- Panneau droit (formulaire) --}}
-    <div class="flex-1 flex flex-col overflow-y-auto bg-[#f8faff]">
+    <div class="flex-1 flex flex-col bg-[#f8faff]">
 
         {{-- Header desktop --}}
         <div class="hidden lg:flex items-center justify-between px-8 py-5">
@@ -137,6 +137,28 @@
                       showPassConfirm: false,
                       password: '',
                       passwordConfirm: '',
+                      photoPreview: null,
+                      photoBase64: '',
+                      setPhoto(e) {
+                          const f = e.target.files[0];
+                          if (!f) return;
+                          this.photoPreview = URL.createObjectURL(f);
+                          const img = new Image();
+                          const reader = new FileReader();
+                          reader.onload = ev => {
+                              img.onload = () => {
+                                  const size = 300;
+                                  const ratio = Math.min(size / img.width, size / img.height, 1);
+                                  const canvas = document.createElement('canvas');
+                                  canvas.width  = Math.round(img.width  * ratio);
+                                  canvas.height = Math.round(img.height * ratio);
+                                  canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                                  this.photoBase64 = canvas.toDataURL('image/jpeg', 0.82);
+                              };
+                              img.src = ev.target.result;
+                          };
+                          reader.readAsDataURL(f);
+                      },
                       get strength() {
                           if (this.password.length === 0) return 0;
                           let s = 0;
@@ -277,6 +299,139 @@
                     </div>
                     <p x-show="passwordConfirm.length > 0 && password !== passwordConfirm"
                        class="mt-1.5 text-[11px] text-red-400">Les mots de passe ne correspondent pas.</p>
+                </div>
+
+                {{-- Informations supplémentaires --}}
+                <div x-data="{ open: false, selectedLangs: [] }"
+                     class="border border-dashed border-gray-200 rounded-2xl overflow-hidden">
+                    <button type="button" @click="open = !open"
+                            class="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50/80 transition-colors">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-6 h-6 bg-indigo-50 rounded-lg flex items-center justify-center">
+                                <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                            </div>
+                            <span class="text-sm font-semibold text-gray-700">Informations supplémentaires</span>
+                            <span class="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full">Optionnel</span>
+                        </div>
+                        <svg class="w-4 h-4 text-gray-400 transition-transform duration-200"
+                             :class="open ? 'rotate-180' : ''"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+
+                    <div x-show="open" x-cloak
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 -translate-y-1"
+                         x-transition:enter-end="opacity-100 translate-y-0"
+                         class="px-4 pb-4 pt-3 space-y-4 border-t border-dashed border-gray-100">
+
+                        {{-- Bio --}}
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Biographie</label>
+                            <textarea name="bio" rows="3"
+                                      placeholder="Votre parcours, votre expérience, votre approche..."
+                                      class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all resize-none"></textarea>
+                        </div>
+
+                        {{-- Photo de profil --}}
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-2">Photo de profil</label>
+                            <div class="flex items-center gap-4">
+                                {{-- Aperçu --}}
+                                <div class="relative flex-shrink-0">
+                                    <div class="w-16 h-16 rounded-2xl overflow-hidden border-2 border-dashed border-gray-200 bg-gray-50 flex items-center justify-center transition-all"
+                                         :class="photoPreview ? 'border-blue-300' : ''">
+                                        <img x-show="photoPreview" :src="photoPreview"
+                                             class="w-full h-full object-cover" x-cloak>
+                                        <svg x-show="!photoPreview" class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                {{-- Bouton upload --}}
+                                <label class="flex-1 cursor-pointer">
+                                    <div class="border border-dashed border-gray-200 rounded-xl px-4 py-3 text-center hover:border-blue-300 hover:bg-blue-50/30 transition-all">
+                                        <svg class="w-4 h-4 text-gray-400 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                        </svg>
+                                        <p class="text-xs font-semibold text-gray-500" x-text="photoPreview ? 'Changer la photo' : 'Choisir une photo'"></p>
+                                        <p class="text-[10px] text-gray-300 mt-0.5">JPG, PNG, WEBP · max 2 Mo</p>
+                                    </div>
+                                    <input type="file" accept="image/jpeg,image/png,image/webp"
+                                           class="hidden" @change="setPhoto($event)">
+                                </label>
+                                <input type="hidden" name="photo_base64" :value="photoBase64">
+                            </div>
+                        </div>
+
+                        {{-- Réseaux sociaux --}}
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-2">Réseaux sociaux</label>
+                            <div class="space-y-2">
+
+                                {{-- LinkedIn --}}
+                                <div class="flex items-center border border-gray-200 rounded-xl overflow-hidden bg-gray-50 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 focus-within:bg-white transition-all">
+                                    <div class="flex items-center justify-center w-11 h-10 flex-shrink-0" style="background:#0A66C2">
+                                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="w-px h-6 bg-gray-200 flex-shrink-0"></div>
+                                    <input type="url" name="linkedin" placeholder="linkedin.com/in/votre-profil"
+                                           class="flex-1 bg-transparent px-3 py-2.5 text-sm text-gray-800 placeholder-gray-300 focus:outline-none">
+                                </div>
+
+                                {{-- Instagram --}}
+                                <div class="flex items-center border border-gray-200 rounded-xl overflow-hidden bg-gray-50 focus-within:border-pink-400 focus-within:ring-2 focus-within:ring-pink-100 focus-within:bg-white transition-all">
+                                    <div class="flex items-center justify-center w-11 h-10 flex-shrink-0" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)">
+                                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="w-px h-6 bg-gray-200 flex-shrink-0"></div>
+                                    <input type="url" name="instagram" placeholder="instagram.com/votre-compte"
+                                           class="flex-1 bg-transparent px-3 py-2.5 text-sm text-gray-800 placeholder-gray-300 focus:outline-none">
+                                </div>
+
+                                {{-- Facebook --}}
+                                <div class="flex items-center border border-gray-200 rounded-xl overflow-hidden bg-gray-50 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 focus-within:bg-white transition-all">
+                                    <div class="flex items-center justify-center w-11 h-10 flex-shrink-0" style="background:#1877F2">
+                                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="w-px h-6 bg-gray-200 flex-shrink-0"></div>
+                                    <input type="url" name="facebook" placeholder="facebook.com/votre-page"
+                                           class="flex-1 bg-transparent px-3 py-2.5 text-sm text-gray-800 placeholder-gray-300 focus:outline-none">
+                                </div>
+
+                            </div>
+                        </div>
+
+                        {{-- Langues parlées --}}
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-2">Langues parlées</label>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach(['Arabe', 'Français', 'Anglais', 'Espagnol', 'Berbère', 'Allemand', 'Portugais', 'Italien'] as $lang)
+                                <button type="button"
+                                        @click="selectedLangs.includes('{{ $lang }}')
+                                            ? selectedLangs = selectedLangs.filter(l => l !== '{{ $lang }}')
+                                            : selectedLangs.push('{{ $lang }}')"
+                                        :class="selectedLangs.includes('{{ $lang }}')
+                                            ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                                            : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-600'"
+                                        class="text-xs font-medium px-3 py-1.5 rounded-full border transition-all duration-150">
+                                    {{ $lang }}
+                                </button>
+                                @endforeach
+                            </div>
+                            <input type="hidden" name="languages" :value="selectedLangs.join(',')">
+                        </div>
+
+                    </div>
                 </div>
 
                 {{-- CGU --}}

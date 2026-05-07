@@ -94,6 +94,12 @@ Route::post('/inscription', function (Request $request, Auth $auth) {
         'city'         => 'nullable|string|max:100',
         'password'     => 'required|string|min:8|confirmed',
         'cgu'          => 'accepted',
+        'bio'          => 'nullable|string|max:1000',
+        'photo_base64' => 'nullable|string',
+        'linkedin'     => 'nullable|url|max:300',
+        'instagram'    => 'nullable|url|max:300',
+        'facebook'     => 'nullable|url|max:300',
+        'languages'    => 'nullable|string|max:200',
     ]);
 
     // Créer l'utilisateur dans Firebase Auth
@@ -105,6 +111,11 @@ Route::post('/inscription', function (Request $request, Auth $auth) {
     // Envoyer l'email de vérification
     $auth->sendEmailVerificationLink($data['email']);
 
+    $uid = $userRecord->uid;
+
+    $photoUrl = (!empty($data['photo_base64']) && str_starts_with($data['photo_base64'], 'data:image/'))
+        ? $data['photo_base64'] : '';
+
     // Obtenir un token OAuth via le service account
     $credentials = new ServiceAccountCredentials(
         'https://www.googleapis.com/auth/datastore',
@@ -114,7 +125,6 @@ Route::post('/inscription', function (Request $request, Auth $auth) {
 
     // Sauvegarder le profil dans Firestore via REST API
     $projectId = 'mediassist-d494a';
-    $uid = $userRecord->uid;
 
     Http::withToken($token)->patch(
         "https://firestore.googleapis.com/v1/projects/{$projectId}/databases/(default)/documents/users/{$uid}",
@@ -128,6 +138,12 @@ Route::post('/inscription', function (Request $request, Auth $auth) {
                 'specialty'    => ['stringValue' => $data['specialty'] ?? ''],
                 'cabinet_name' => ['stringValue' => $data['cabinet_name'] ?? ''],
                 'city'         => ['stringValue' => $data['city'] ?? ''],
+                'bio'          => ['stringValue' => $data['bio'] ?? ''],
+                'photo_url'    => ['stringValue' => $photoUrl],
+                'linkedin'     => ['stringValue' => $data['linkedin'] ?? ''],
+                'instagram'    => ['stringValue' => $data['instagram'] ?? ''],
+                'facebook'     => ['stringValue' => $data['facebook'] ?? ''],
+                'languages'    => ['stringValue' => $data['languages'] ?? ''],
                 'plan'         => ['stringValue' => 'starter'],
                 'trial_ends_at'=> ['stringValue' => now()->addDays(14)->toDateTimeString()],
                 'created_at'   => ['stringValue' => now()->toDateTimeString()],
@@ -193,6 +209,26 @@ Route::post('/login/doctor', function (Request $request) {
         session()->flush();
         return redirect('/login/admin')->with('error', 'Ce compte est un compte administrateur. Utilisez la connexion admin.');
     }
+
+    // Lire Firestore : sync email + récupérer photo_url
+    try {
+        $uid       = $json['localId'];
+        $authEmail = $json['email'];
+        $fsToken   = firestoreToken();
+        $fsDoc     = \Illuminate\Support\Facades\Http::withToken($fsToken)
+            ->get("https://firestore.googleapis.com/v1/projects/mediassist-d494a/databases/(default)/documents/users/{$uid}");
+        $fields      = $fsDoc->json()['fields'] ?? [];
+        $storedEmail = $fields['email']['stringValue'] ?? null;
+        $photoUrl    = $fields['photo_url']['stringValue'] ?? '';
+
+        if ($storedEmail && $storedEmail !== $authEmail) {
+            \Illuminate\Support\Facades\Http::withToken($fsToken)->patch(
+                "https://firestore.googleapis.com/v1/projects/mediassist-d494a/databases/(default)/documents/users/{$uid}?updateMask.fieldPaths=email",
+                ['fields' => ['email' => ['stringValue' => $authEmail]]]
+            );
+        }
+        session(['firebase_photo_url' => $photoUrl]);
+    } catch (\Throwable) {}
 
     return redirect('/dashboard');
 });
@@ -271,6 +307,12 @@ Route::middleware('doctor')->group(function () {
             'specialty'    => 'nullable|string|max:100',
             'cabinet_name' => 'nullable|string|max:150',
             'city'         => 'nullable|string|max:100',
+            'bio'          => 'nullable|string|max:1000',
+            'photo_base64' => 'nullable|string',
+            'linkedin'     => 'nullable|url|max:300',
+            'instagram'    => 'nullable|url|max:300',
+            'facebook'     => 'nullable|url|max:300',
+            'languages'    => 'nullable|string|max:200',
         ]);
 
         $uid   = session('firebase_uid');
@@ -278,8 +320,13 @@ Route::middleware('doctor')->group(function () {
         $projectId = 'mediassist-d494a';
 
         $fields = [];
-        foreach ($data as $k => $v) {
-            $fields[$k] = ['stringValue' => (string) ($v ?? '')];
+        foreach (['first_name','last_name','phone','specialty','cabinet_name','city','bio','linkedin','instagram','facebook','languages'] as $k) {
+            $fields[$k] = ['stringValue' => (string) ($data[$k] ?? '')];
+        }
+
+        if (!empty($data['photo_base64']) && str_starts_with($data['photo_base64'], 'data:image/')) {
+            $fields['photo_url'] = ['stringValue' => $data['photo_base64']];
+            session(['firebase_photo_url' => $data['photo_base64']]);
         }
 
         $mask = implode('&', array_map(fn($k) => 'updateMask.fieldPaths=' . urlencode($k), array_keys($fields)));
@@ -318,36 +365,25 @@ Route::middleware('doctor')->group(function () {
 
         $idToken = $check->json()['idToken'];
 
-        $update = \Illuminate\Support\Facades\Http::withOptions(httpOptions())
-            ->post("https://identitytoolkit.googleapis.com/v1/accounts:update?key={$apiKey}", [
-                'idToken'           => $idToken,
-                'email'             => $data['new_email'],
-                'returnSecureToken' => true,
+        $oob = \Illuminate\Support\Facades\Http::withOptions(httpOptions())
+            ->post("https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={$apiKey}", [
+                'requestType' => 'VERIFY_AND_CHANGE_EMAIL',
+                'idToken'     => $idToken,
+                'newEmail'    => $data['new_email'],
+                'continueUrl' => url('/email-confirme'),
             ]);
 
-        if ($update->failed() || isset($update->json()['error'])) {
-            $msg = $update->json()['error']['message'] ?? '';
+        if ($oob->failed() || isset($oob->json()['error'])) {
+            $msg = $oob->json()['error']['message'] ?? '';
             $message = match(true) {
                 str_contains($msg, 'EMAIL_EXISTS')  => 'Cette adresse e-mail est déjà utilisée par un autre compte.',
                 str_contains($msg, 'INVALID_EMAIL') => 'Adresse e-mail invalide.',
-                default                              => 'Erreur lors du changement d\'e-mail. Réessayez.',
+                default                              => 'Erreur lors de l\'envoi du lien. Réessayez.',
             };
             return back()->with('error', $message);
         }
 
-        try {
-            $uid   = session('firebase_uid');
-            $token = firestoreToken();
-            $mask  = 'updateMask.fieldPaths=email';
-            \Illuminate\Support\Facades\Http::withToken($token)->patch(
-                "https://firestore.googleapis.com/v1/projects/mediassist-d494a/databases/(default)/documents/users/{$uid}?{$mask}",
-                ['fields' => ['email' => ['stringValue' => $data['new_email']]]]
-            );
-        } catch (\Throwable) {}
-
-        session(['firebase_email' => $data['new_email'], 'firebase_id_token' => $update->json()['idToken']]);
-
-        return back()->with('success', 'Adresse e-mail mise à jour avec succès.');
+        return back()->with('success', "Lien de confirmation envoyé à {$data['new_email']}. Cliquez dessus pour finaliser le changement.");
     });
 
     Route::post('/dashboard/parametres/delete', function (Request $request) {
@@ -422,6 +458,34 @@ Route::middleware('doctor')->group(function () {
     });
 
 });
+
+// ─── Helpers Firebase Storage ─────────────────────────────────────────────────
+function uploadProfilePhoto(\Illuminate\Http\UploadedFile $file, string $uid): string
+{
+    $credentials = new \Google\Auth\Credentials\ServiceAccountCredentials(
+        'https://www.googleapis.com/auth/devstorage.read_write',
+        firebaseCredentials()
+    );
+    $token    = $credentials->fetchAuthToken()['access_token'];
+    $bucket   = 'mediassist-d494a.appspot.com';
+    $name     = "avatars/{$uid}." . $file->getClientOriginalExtension();
+    $mimeType = $file->getMimeType();
+
+    $response = \Illuminate\Support\Facades\Http::withToken($token)
+        ->withHeaders(['Content-Type' => $mimeType])
+        ->withBody(file_get_contents($file->getRealPath()), $mimeType)
+        ->post("https://firebasestorage.googleapis.com/v0/b/{$bucket}/o?uploadType=media&name=" . urlencode($name));
+
+    if ($response->failed()) {
+        throw new \RuntimeException('Upload échoué : ' . $response->body());
+    }
+
+    $downloadToken = $response->json()['downloadTokens'] ?? null;
+    $encodedName   = urlencode($name);
+
+    return "https://firebasestorage.googleapis.com/v0/b/{$bucket}/o/{$encodedName}?alt=media"
+         . ($downloadToken ? "&token={$downloadToken}" : '');
+}
 
 // ─── Helpers Firestore ────────────────────────────────────────────────────────
 function firestoreUser(string $uid): array
@@ -843,6 +907,11 @@ Route::post('/logout', function (Request $request) {
     session()->flush();
     $redirect = $request->input('redirect', $isAdmin ? '/login/admin' : '/login/doctor');
     return redirect($redirect)->with('success', 'Vous avez été déconnecté.');
+});
+
+Route::get('/email-confirme', function () {
+    session()->flush();
+    return redirect('/login/doctor')->with('success', 'Adresse e-mail confirmée ! Connectez-vous avec votre nouvel email.');
 });
 
 Route::post('/contact-widget', function (Request $request) {

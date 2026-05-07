@@ -8,6 +8,8 @@
     search: '',
     tab: 'all',
     selected: null,
+    page: 1,
+    perPage: 9,
     doctors: {{ json_encode($doctors) }},
     get filtered() {
         return this.doctors.filter(d => {
@@ -20,9 +22,15 @@
             return matchSearch && matchTab;
         });
     },
+    get totalPages() { return Math.max(1, Math.ceil(this.filtered.length / this.perPage)); },
+    get paginated() {
+        const start = (this.page - 1) * this.perPage;
+        return this.filtered.slice(start, start + this.perPage);
+    },
     open(d) { this.selected = d; },
     close() { this.selected = null; }
-}" @keydown.escape.window="close()">
+}" x-init="$watch('search', () => page = 1); $watch('tab', () => page = 1)"
+   @keydown.escape.window="close()">
 
 {{-- ── Stats ──────────────────────────────────────────────────── --}}
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -121,17 +129,22 @@
                 </tr>
             </template>
 
-            <template x-for="d in filtered" :key="d.uid ?? d.email">
+            <template x-for="d in paginated" :key="d.uid ?? d.email">
                 <tr @click="open(d)"
                     class="hover:bg-blue-50/40 transition-colors cursor-pointer group"
                     :class="selected && selected.uid === d.uid ? 'bg-blue-50/60' : ''">
 
                     <td class="px-5 py-3.5">
                         <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                                 style="background: linear-gradient(135deg, #0d2150, #0f3460);"
-                                 x-text="((d.first_name ?? d.email ?? '?')[0]).toUpperCase()">
-                            </div>
+                            <template x-if="d.photo_url">
+                                <img :src="d.photo_url" class="w-9 h-9 rounded-xl object-cover flex-shrink-0">
+                            </template>
+                            <template x-if="!d.photo_url">
+                                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                                     style="background: linear-gradient(135deg, #0d2150, #0f3460);"
+                                     x-text="((d.first_name ?? d.email ?? '?')[0]).toUpperCase()">
+                                </div>
+                            </template>
                             <div class="min-w-0">
                                 <p class="text-sm font-semibold text-gray-900 truncate"
                                    x-text="'Dr. ' + (((d.first_name ?? '') + ' ' + (d.last_name ?? '')).trim() || '—')"></p>
@@ -202,13 +215,18 @@
             <p class="text-sm text-gray-400">Aucun médecin trouvé</p>
         </div>
     </template>
-    <template x-for="d in filtered" :key="d.uid ?? d.email">
+    <template x-for="d in paginated" :key="d.uid ?? d.email">
         <div @click="open(d)"
              class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 cursor-pointer hover:border-blue-200 hover:shadow-md transition-all active:scale-[0.99]">
             <div class="flex items-center gap-3 mb-3">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
-                     style="background: linear-gradient(135deg, #0d2150, #0f3460);"
-                     x-text="((d.first_name ?? d.email ?? '?')[0]).toUpperCase()"></div>
+                <template x-if="d.photo_url">
+                        <img :src="d.photo_url" class="w-10 h-10 rounded-xl object-cover flex-shrink-0">
+                    </template>
+                    <template x-if="!d.photo_url">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
+                             style="background: linear-gradient(135deg, #0d2150, #0f3460);"
+                             x-text="((d.first_name ?? d.email ?? '?')[0]).toUpperCase()"></div>
+                    </template>
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-semibold text-gray-900 truncate"
                        x-text="'Dr. ' + (((d.first_name ?? '') + ' ' + (d.last_name ?? '')).trim() || '—')"></p>
@@ -227,6 +245,52 @@
             </div>
         </div>
     </template>
+</div>
+
+{{-- ── Pagination ──────────────────────────────────────────────── --}}
+<div class="flex items-center justify-between mt-4 px-1">
+    <p class="text-xs text-gray-400">
+        Page <span class="font-semibold text-gray-700" x-text="page"></span>
+        sur <span class="font-semibold text-gray-700" x-text="totalPages"></span>
+        &nbsp;·&nbsp;
+        <span x-text="filtered.length"></span> médecin<span x-show="filtered.length !== 1">s</span>
+    </p>
+    <div class="flex items-center gap-1">
+        <button @click="page = 1" :disabled="page === 1"
+                :style="page === 1 ? 'opacity:0.35;cursor:default' : ''"
+                class="w-8 h-8 rounded-lg border border-gray-200 bg-white flex items-center justify-center hover:bg-gray-50 transition-colors">
+            <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7M19 19l-7-7 7-7"/>
+            </svg>
+        </button>
+        <button @click="if(page > 1) page--" :disabled="page === 1"
+                :style="page === 1 ? 'opacity:0.35;cursor:default' : ''"
+                class="w-8 h-8 rounded-lg border border-gray-200 bg-white flex items-center justify-center hover:bg-gray-50 transition-colors">
+            <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </button>
+        <template x-for="p in Array.from({length: totalPages}, (_, i) => i + 1).filter(p => Math.abs(p - page) <= 2)" :key="p">
+            <button @click="page = p"
+                    :style="page === p ? 'background:#0d2150;color:white;border-color:#0d2150' : ''"
+                    class="w-8 h-8 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-600 flex items-center justify-center hover:bg-gray-50 transition-colors"
+                    x-text="p"></button>
+        </template>
+        <button @click="if(page < totalPages) page++" :disabled="page === totalPages"
+                :style="page === totalPages ? 'opacity:0.35;cursor:default' : ''"
+                class="w-8 h-8 rounded-lg border border-gray-200 bg-white flex items-center justify-center hover:bg-gray-50 transition-colors">
+            <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+        </button>
+        <button @click="page = totalPages" :disabled="page === totalPages"
+                :style="page === totalPages ? 'opacity:0.35;cursor:default' : ''"
+                class="w-8 h-8 rounded-lg border border-gray-200 bg-white flex items-center justify-center hover:bg-gray-50 transition-colors">
+            <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+            </svg>
+        </button>
+    </div>
 </div>
 
 {{-- ── Overlay + Panel détail ───────────────────────────────────── --}}
@@ -255,9 +319,14 @@
         <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100 flex-shrink-0"
              style="background: linear-gradient(135deg, #0a1628 0%, #0d2150 55%, #0f3460 100%);">
             <div class="flex items-center gap-3">
-                <div class="w-11 h-11 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center text-base font-bold text-white flex-shrink-0"
-                     x-text="((selected?.first_name ?? selected?.email ?? '?')[0]).toUpperCase()">
-                </div>
+                <template x-if="selected?.photo_url">
+                        <img :src="selected.photo_url" class="w-11 h-11 rounded-xl object-cover border border-white/20 flex-shrink-0">
+                    </template>
+                    <template x-if="!selected?.photo_url">
+                        <div class="w-11 h-11 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center text-base font-bold text-white flex-shrink-0"
+                             x-text="((selected?.first_name ?? selected?.email ?? '?')[0]).toUpperCase()">
+                        </div>
+                    </template>
                 <div>
                     <p class="text-sm font-bold text-white"
                        x-text="'Dr. ' + (((selected?.first_name ?? '') + ' ' + (selected?.last_name ?? '')).trim() || '—')"></p>
@@ -344,6 +413,72 @@
                     @endforeach
                 </div>
             </div>
+
+            {{-- Bio --}}
+            <template x-if="selected?.bio">
+                <div>
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2.5">Bio</p>
+                    <div class="rounded-xl border border-gray-100 bg-gray-50/50 px-4 py-3">
+                        <p class="text-xs text-gray-700 leading-relaxed" x-text="selected.bio"></p>
+                    </div>
+                </div>
+            </template>
+
+            {{-- Langues --}}
+            <template x-if="(selected?.languages ?? '').trim()">
+                <div>
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2.5">Langues parlées</p>
+                    <div class="flex flex-wrap gap-1.5">
+                        <template x-for="lang in (selected?.languages ?? '').split(',').filter(l => l.trim())" :key="lang">
+                            <span class="text-[11px] font-semibold text-blue-700 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-full" x-text="lang.trim()"></span>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+            {{-- Réseaux sociaux --}}
+            <template x-if="selected?.linkedin || selected?.instagram || selected?.facebook">
+                <div>
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2.5">Présence en ligne</p>
+                    <div class="space-y-2">
+                        <template x-if="selected?.linkedin">
+                            <a :href="selected.linkedin" target="_blank" rel="noopener"
+                               class="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/40 transition-all group">
+                                <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#0077B5">
+                                    <svg class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                                    </svg>
+                                </div>
+                                <span class="text-xs font-medium text-gray-700 truncate group-hover:text-blue-700 transition-colors" x-text="selected.linkedin"></span>
+                            </a>
+                        </template>
+                        <template x-if="selected?.instagram">
+                            <a :href="selected.instagram" target="_blank" rel="noopener"
+                               @mouseenter="$el.style.borderColor='#fbcfe8'; $el.style.background='rgba(253,242,248,0.4)'; $el.querySelector('span').style.color='#db2777'"
+                               @mouseleave="$el.style.borderColor=''; $el.style.background=''; $el.querySelector('span').style.color=''"
+                               class="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-gray-100 transition-all">
+                                <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)">
+                                    <svg class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                                    </svg>
+                                </div>
+                                <span class="text-xs font-medium text-gray-700 truncate transition-colors" x-text="selected.instagram"></span>
+                            </a>
+                        </template>
+                        <template x-if="selected?.facebook">
+                            <a :href="selected.facebook" target="_blank" rel="noopener"
+                               class="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/40 transition-all group">
+                                <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#1877F2">
+                                    <svg class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                    </svg>
+                                </div>
+                                <span class="text-xs font-medium text-gray-700 truncate group-hover:text-blue-600 transition-colors" x-text="selected.facebook"></span>
+                            </a>
+                        </template>
+                    </div>
+                </div>
+            </template>
 
             {{-- Compte --}}
             <div>
