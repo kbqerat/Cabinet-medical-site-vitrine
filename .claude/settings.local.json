@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(php artisan *)",
-      "Bash(php -l routes/web.php)",
-      "Bash(php -l app/Models/User.php)"
-    ]
-  }
-}

@@ -5,6 +5,105 @@
 @section('content')
 <div class="max-w-2xl mx-auto space-y-5">
 
+    {{-- Flash messages --}}
+    @if(session('success'))
+    <div class="flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium px-4 py-3 rounded-xl">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        {{ session('success') }}
+    </div>
+    @endif
+    @if(session('error'))
+    <div class="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 text-sm font-medium px-4 py-3 rounded-xl">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        {{ session('error') }}
+    </div>
+    @endif
+
+    {{-- Photo de profil --}}
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+         x-data="{
+             photoPreview: '{{ $profile['photo_url'] ?? '' }}',
+             photoBase64: '',
+             loading: false,
+             pick() {
+                 const input = document.createElement('input');
+                 input.type = 'file';
+                 input.accept = 'image/jpeg,image/png,image/webp';
+                 input.onchange = e => {
+                     const file = e.target.files[0];
+                     if (!file) return;
+                     if (file.size > 5 * 1024 * 1024) { alert('La photo ne doit pas dépasser 5 Mo.'); return; }
+                     const reader = new FileReader();
+                     reader.onload = ev => { this.photoPreview = ev.target.result; this.photoBase64 = ev.target.result; };
+                     reader.readAsDataURL(file);
+                 };
+                 input.click();
+             },
+             remove() { this.photoPreview = ''; this.photoBase64 = 'remove'; }
+         }">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h2 class="text-sm font-bold text-gray-900">Photo de profil</h2>
+            <p class="text-xs text-gray-400 mt-0.5">Votre photo visible dans le panneau d'administration</p>
+        </div>
+        <div class="px-6 py-5">
+            <div class="flex items-center gap-5">
+                {{-- Avatar preview --}}
+                <div class="relative flex-shrink-0">
+                    <template x-if="photoPreview && photoPreview !== 'remove'">
+                        <img :src="photoPreview" alt="Photo de profil"
+                             class="w-20 h-20 rounded-2xl object-cover border border-gray-100 shadow-sm">
+                    </template>
+                    <template x-if="!photoPreview || photoPreview === 'remove'">
+                        <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-2xl font-bold text-white"
+                             style="background: linear-gradient(135deg, #0d2150, #0f3460);">
+                            {{ strtoupper(substr(auth()->user()->email ?? 'A', 0, 1)) }}
+                        </div>
+                    </template>
+                </div>
+
+                {{-- Actions --}}
+                <div class="flex flex-col gap-2">
+                    <button type="button" @click="pick()"
+                            class="inline-flex items-center gap-2 text-sm font-semibold text-white px-4 py-2 rounded-xl transition-all hover:-translate-y-0.5 shadow-sm"
+                            style="background: linear-gradient(135deg, #0d2150, #0f3460);">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        Choisir une photo
+                    </button>
+                    <button type="button" @click="remove()" x-show="photoPreview && photoPreview !== 'remove'"
+                            class="inline-flex items-center gap-2 text-xs font-medium text-red-500 hover:text-red-600 transition-colors">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Supprimer la photo
+                    </button>
+                </div>
+            </div>
+
+            {{-- Save form --}}
+            <form action="/admin/parametres/photo" method="POST" x-show="photoBase64" x-cloak
+                  @submit="loading = true" class="mt-4">
+                @csrf
+                <input type="hidden" name="photo_base64" :value="photoBase64">
+                <button type="submit" :disabled="loading"
+                        class="inline-flex items-center gap-2 text-sm font-semibold text-white px-5 py-2.5 rounded-xl shadow-sm transition-all hover:-translate-y-0.5 disabled:opacity-60"
+                        style="background: linear-gradient(135deg, #0d2150, #0f3460);">
+                    <svg x-show="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                    </svg>
+                    <svg x-show="!loading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    <span x-text="loading ? 'Enregistrement…' : 'Enregistrer la photo'"></span>
+                </button>
+            </form>
+
+            <p class="text-xs text-gray-400 mt-3">JPG, PNG ou WebP · Max 5 Mo</p>
+        </div>
+    </div>
+
     {{-- Compte administrateur --}}
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100">

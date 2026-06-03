@@ -840,17 +840,20 @@ Route::prefix('admin')->middleware('admin')->group(function () {
     })->name('admin.messages');
 
     Route::get('/profil', function () {
+        $user    = auth()->user();
         $profile = [
-            'name'  => trim(auth()->user()->first_name . ' ' . auth()->user()->last_name),
-            'phone' => auth()->user()->phone ?? '',
+            'name'      => trim($user->first_name . ' ' . $user->last_name),
+            'phone'     => $user->phone ?? '',
+            'photo_url' => $user->photo_url ?? null,
         ];
         return view('admin.profil', compact('profile'));
     })->name('admin.profil');
 
     Route::post('/profil', function (Request $request) {
         $data = $request->validate([
-            'name'  => 'nullable|string|max:100',
-            'phone' => 'nullable|string|max:30',
+            'name'        => 'nullable|string|max:100',
+            'phone'       => 'nullable|string|max:30',
+            'photo_base64'=> 'nullable|string',
         ]);
 
         if (!empty($data['name'])) {
@@ -864,14 +867,19 @@ Route::prefix('admin')->middleware('admin')->group(function () {
             auth()->user()->update(['phone' => $data['phone'] ?? null]);
         }
 
+        if (!empty($data['photo_base64']) && str_starts_with($data['photo_base64'], 'data:image/')) {
+            savePhotoFromBase64(auth()->user(), $data['photo_base64']);
+        }
+
         return back()->with('success', 'Profil mis à jour avec succès.');
     });
 
     Route::get('/parametres', function () {
         $totalDoctors = User::where('role', 'doctor')->count();
         $profile = [
-            'name'  => trim(auth()->user()->first_name . ' ' . auth()->user()->last_name),
-            'phone' => auth()->user()->phone ?? '',
+            'name'      => trim(auth()->user()->first_name . ' ' . auth()->user()->last_name),
+            'phone'     => auth()->user()->phone ?? '',
+            'photo_url' => auth()->user()->photo_url ?? null,
         ];
         return view('admin.parametres', compact('totalDoctors', 'profile'));
     })->name('admin.parametres');
@@ -909,6 +917,24 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         auth()->user()->update(['password' => Hash::make($data['password'])]);
 
         return back()->with('success', 'Mot de passe mis à jour avec succès.');
+    });
+
+    Route::post('/parametres/photo', function (Request $request) {
+        $data = $request->validate(['photo_base64' => 'required|string|max:8000000']);
+        $user = auth()->user();
+        if ($data['photo_base64'] === 'remove') {
+            $old = $user->getRawOriginal('photo_url') ?? '';
+            if ($old && str_starts_with($old, 'photos/') && Storage::disk('local')->exists($old)) {
+                Storage::disk('local')->delete($old);
+            }
+            $user->update(['photo_url' => null]);
+            return back()->with('success', 'Photo de profil supprimée.');
+        }
+        if (!str_starts_with($data['photo_base64'], 'data:image/')) {
+            return back()->with('error', 'Format de photo invalide.');
+        }
+        savePhotoFromBase64($user, $data['photo_base64']);
+        return back()->with('success', 'Photo de profil mise à jour.');
     });
 
     Route::post('/parametres/cache-clear', function () {

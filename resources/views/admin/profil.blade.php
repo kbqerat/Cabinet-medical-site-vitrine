@@ -6,7 +6,9 @@
 @php
 $name     = $profile['name'] ?? '';
 $email    = auth()->user()->email ?? '';
-$initials = strtoupper(substr($name ?: $email, 0, 1));
+$phone    = $profile['phone'] ?? '';
+$photoUrl = $profile['photo_url'] ?? null;
+$initials = strtoupper(substr($name ?: $email, 0, 2));
 @endphp
 
 <div class="max-w-2xl mx-auto space-y-5">
@@ -14,14 +16,17 @@ $initials = strtoupper(substr($name ?: $email, 0, 1));
     {{-- Avatar + résumé --}}
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
         <div class="flex items-center gap-5">
+            @if($photoUrl)
+            <img src="{{ $photoUrl }}" alt="Photo de profil"
+                 class="w-16 h-16 rounded-2xl object-cover flex-shrink-0 border border-gray-100 shadow-sm">
+            @else
             <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-bold text-white flex-shrink-0"
                  style="background: linear-gradient(135deg, #0d2150, #0f3460);">
-                {{ $initials }}
+                {{ $initials ?: 'A' }}
             </div>
+            @endif
             <div>
-                <h1 class="text-base font-bold text-gray-900">
-                    {{ $name ?: 'Administrateur' }}
-                </h1>
+                <h1 class="text-base font-bold text-gray-900">{{ $name ?: 'Administrateur' }}</h1>
                 <p class="text-sm text-gray-400 mt-0.5">Administrateur</p>
                 <p class="text-xs text-gray-400">{{ $email }}</p>
             </div>
@@ -39,9 +44,7 @@ $initials = strtoupper(substr($name ?: $email, 0, 1));
             <div>
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Nom complet</label>
                 <div class="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl">
-                    <span class="text-sm {{ $name ? 'text-gray-800' : 'text-gray-300' }}">
-                        {{ $name ?: '—' }}
-                    </span>
+                    <span class="text-sm {{ $name ? 'text-gray-800' : 'text-gray-300' }}">{{ $name ?: '—' }}</span>
                 </div>
             </div>
 
@@ -61,9 +64,7 @@ $initials = strtoupper(substr($name ?: $email, 0, 1));
             <div>
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Téléphone</label>
                 <div class="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl">
-                    <span class="text-sm {{ ($profile['phone'] ?? '') ? 'text-gray-800' : 'text-gray-300' }}">
-                        {{ $profile['phone'] ?? '—' }}
-                    </span>
+                    <span class="text-sm {{ $phone ? 'text-gray-800' : 'text-gray-300' }}">{{ $phone ?: '—' }}</span>
                 </div>
             </div>
 
@@ -71,7 +72,7 @@ $initials = strtoupper(substr($name ?: $email, 0, 1));
     </div>
 
     <p class="text-xs text-gray-400 text-center pb-2">
-        Pour modifier vos informations, rendez-vous dans
+        Pour modifier vos informations et votre photo, rendez-vous dans
         <a href="/admin/parametres" class="text-blue-500 hover:underline">Paramètres</a>.
     </p>
 
