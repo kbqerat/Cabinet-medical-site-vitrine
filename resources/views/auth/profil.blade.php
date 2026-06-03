@@ -6,7 +6,7 @@
 @php
 $fullName  = trim(($doctor['first_name'] ?? '') . ' ' . ($doctor['last_name'] ?? ''));
 $initials  = strtoupper(
-    substr($doctor['first_name'] ?? session('firebase_email', '?'), 0, 1) .
+    substr($doctor['first_name'] ?? auth()->user()->email, 0, 1) .
     substr($doctor['last_name'] ?? '', 0, 1)
 );
 $photoUrl  = $doctor['photo_url'] ?? '';
@@ -30,7 +30,7 @@ $hasSocial = $linkedin || $instagram || $facebook;
             @else
             <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-bold text-white flex-shrink-0"
                  style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
-                {{ $initials ?: strtoupper(substr(session('firebase_email', '?'), 0, 1)) }}
+                {{ $initials ?: strtoupper(substr(auth()->user()->email, 0, 1)) }}
             </div>
             @endif
             <div class="flex-1 min-w-0">
@@ -38,7 +38,7 @@ $hasSocial = $linkedin || $instagram || $facebook;
                     {{ $fullName ? 'Dr. ' . $fullName : 'Mon profil' }}
                 </h1>
                 <p class="text-sm text-gray-400 mt-0.5">{{ $doctor['specialty'] ?? '' }}</p>
-                <p class="text-xs text-gray-400">{{ session('firebase_email') }}</p>
+                <p class="text-xs text-gray-400">{{ auth()->user()->email }}</p>
                 @if($bio)
                 <p class="text-sm text-gray-600 mt-3 leading-relaxed border-t border-gray-100 pt-3">{{ $bio }}</p>
                 @endif
@@ -79,7 +79,7 @@ $hasSocial = $linkedin || $instagram || $facebook;
                     <svg class="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                     </svg>
-                    <span class="text-sm text-gray-800 font-medium">{{ session('firebase_email') }}</span>
+                    <span class="text-sm text-gray-800 font-medium">{{ auth()->user()->email }}</span>
                     <span class="ml-auto inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
                         <span class="w-1 h-1 rounded-full bg-emerald-500"></span>Actif
                     </span>

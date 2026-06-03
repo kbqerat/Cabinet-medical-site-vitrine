@@ -17,9 +17,28 @@ $fullName    = trim(($doctor['first_name'] ?? '') . ' ' . ($doctor['last_name'] 
 $specialty   = $doctor['specialty'] ?? '';
 $city        = $doctor['city'] ?? '';
 $cabinet     = $doctor['cabinet_name'] ?? '';
-$initials    = strtoupper(substr($doctor['first_name'] ?? session('firebase_email','?'), 0, 1) . substr($doctor['last_name'] ?? '', 0, 1));
+$initials    = strtoupper(substr($doctor['first_name'] ?? auth()->user()->email, 0, 1) . substr($doctor['last_name'] ?? '', 0, 1));
 $hour        = (int) now()->format('H');
 $greeting    = $hour < 12 ? 'Bonjour' : ($hour < 18 ? 'Bon après-midi' : 'Bonsoir');
+
+// Complétion du profil (nécessaire avant les stats cards)
+$profileSteps = [
+    ['label' => 'Nom complet',  'done' => !empty($doctor['first_name']) && !empty($doctor['last_name'])],
+    ['label' => 'Spécialité',   'done' => !empty($doctor['specialty'])],
+    ['label' => 'Téléphone',    'done' => !empty($doctor['phone'])],
+    ['label' => 'Ville',        'done' => !empty($doctor['city'])],
+    ['label' => 'Cabinet',      'done' => !empty($doctor['cabinet_name'])],
+    ['label' => 'Photo',        'done' => !empty($doctor['photo_url'])],
+    ['label' => 'Biographie',   'done' => !empty($doctor['bio'])],
+    ['label' => 'Langues',      'done' => !empty($doctor['languages'])],
+];
+$doneCount  = collect($profileSteps)->where('done', true)->count();
+$totalCount = count($profileSteps);
+$pct        = (int) round($doneCount / $totalCount * 100);
+$missing    = collect($profileSteps)->where('done', false);
+$barColor   = $pct >= 80 ? '#059669' : ($pct >= 50 ? '#d97706' : '#dc2626');
+$bgLight    = $pct >= 80 ? '#ecfdf5' : ($pct >= 50 ? '#fffbeb' : '#fef2f2');
+$borderClr  = $pct >= 80 ? '#bbf7d0' : ($pct >= 50 ? '#fde68a' : '#fecaca');
 @endphp
 
 {{-- ── LIGNE 1 : Salutation + statut abonnement ──────────────── --}}
@@ -74,50 +93,52 @@ $greeting    = $hour < 12 ? 'Bonjour' : ($hour < 18 ? 'Bon après-midi' : 'Bonso
     @php
     $stats = [
         [
-            'label'  => 'Plan actuel',
-            'value'  => $isPro ? 'Pro' : 'Starter',
-            'sub'    => $isPro ? 'Accès complet' : 'Fonctionnalités de base',
-            'icon'   => 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z',
-            'color'  => $isPro ? '#059669' : '#0d2150',
-            'light'  => $isPro ? '#ecfdf5' : '#eff6ff',
-            'ring'   => $isPro ? '#6ee7b7' : '#bfdbfe',
-            'href'   => '/dashboard/abonnement',
+            'label' => 'Vues du profil',
+            'value' => number_format($profileViews),
+            'sub'   => 'Visites de votre vitrine',
+            'icon'  => 'M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z',
+            'color' => '#0d2150', 'light' => '#eff6ff', 'ring' => '#bfdbfe',
+            'href'  => $profileUrl,
+            'blank' => true,
         ],
         [
-            'label'  => "Jours d'essai",
-            'value'  => $isPro ? '∞' : (string)$daysLeft,
-            'sub'    => $isPro ? 'Accès permanent' : ($trialActive ? 'Expire le '.$trialEndFmt : 'Essai terminé'),
-            'icon'   => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
-            'color'  => $trialActive ? '#d97706' : ($isPro ? '#059669' : '#9ca3af'),
-            'light'  => $trialActive ? '#fffbeb' : ($isPro ? '#ecfdf5' : '#f9fafb'),
-            'ring'   => $trialActive ? '#fcd34d' : ($isPro ? '#6ee7b7' : '#e5e7eb'),
-            'href'   => '/dashboard/abonnement',
+            'label' => 'Messages reçus',
+            'value' => (string)$messageCount,
+            'sub'   => $messageCount > 0 ? 'Via votre vitrine' : 'Aucun message encore',
+            'icon'  => 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+            'color' => $messageCount > 0 ? '#059669' : '#9ca3af',
+            'light' => $messageCount > 0 ? '#ecfdf5' : '#f9fafb',
+            'ring'  => $messageCount > 0 ? '#6ee7b7' : '#e5e7eb',
+            'href'  => '#messages',
+            'blank' => false,
         ],
         [
-            'label'  => 'Statut',
-            'value'  => ($trialActive || $isPro) ? 'Actif' : 'Inactif',
-            'sub'    => $isPro ? 'Plan Pro actif' : ($trialActive ? 'Essai en cours' : 'Compte suspendu'),
-            'icon'   => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
-            'color'  => ($trialActive || $isPro) ? '#059669' : '#dc2626',
-            'light'  => ($trialActive || $isPro) ? '#ecfdf5' : '#fef2f2',
-            'ring'   => ($trialActive || $isPro) ? '#6ee7b7' : '#fca5a5',
-            'href'   => '/dashboard/abonnement',
+            'label' => 'Profil complété',
+            'value' => $pct . '%',
+            'sub'   => $pct >= 100 ? 'Tout est renseigné ✓' : ($missing->count() . ' champ' . ($missing->count() > 1 ? 's' : '') . ' manquant' . ($missing->count() > 1 ? 's' : '')),
+            'icon'  => 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
+            'color' => $pct >= 80 ? '#059669' : ($pct >= 50 ? '#d97706' : '#dc2626'),
+            'light' => $pct >= 80 ? '#ecfdf5' : ($pct >= 50 ? '#fffbeb' : '#fef2f2'),
+            'ring'  => $pct >= 80 ? '#6ee7b7' : ($pct >= 50 ? '#fde68a' : '#fecaca'),
+            'href'  => '/dashboard/profil',
+            'blank' => false,
         ],
         [
-            'label'  => 'Profil',
-            'value'  => ($fullName || $specialty) ? 'Renseigné' : 'Incomplet',
-            'sub'    => $cabinet ?: ($city ?: 'Complétez votre profil'),
-            'icon'   => 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
-            'color'  => ($fullName && $specialty) ? '#059669' : '#d97706',
-            'light'  => ($fullName && $specialty) ? '#ecfdf5' : '#fffbeb',
-            'ring'   => ($fullName && $specialty) ? '#6ee7b7' : '#fcd34d',
-            'href'   => '/dashboard/profil',
+            'label' => 'Plan actuel',
+            'value' => $isPro ? 'Pro' : 'Starter',
+            'sub'   => $isPro ? 'Accès complet' : ($trialActive ? $daysLeft . 'j d\'essai restants' : 'Essai expiré'),
+            'icon'  => 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z',
+            'color' => $isPro ? '#059669' : ($trialActive ? '#d97706' : '#9ca3af'),
+            'light' => $isPro ? '#ecfdf5' : ($trialActive ? '#fffbeb' : '#f9fafb'),
+            'ring'  => $isPro ? '#6ee7b7' : ($trialActive ? '#fde68a' : '#e5e7eb'),
+            'href'  => '/dashboard/abonnement',
+            'blank' => false,
         ],
     ];
     @endphp
 
     @foreach($stats as $s)
-    <a href="{{ $s['href'] }}"
+    <a href="{{ $s['href'] }}" {{ ($s['blank'] ?? false) ? 'target="_blank"' : '' }}
        class="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 p-5 group block">
         <div class="flex items-center justify-between mb-4">
             <div class="w-9 h-9 rounded-xl flex items-center justify-center"
@@ -136,6 +157,63 @@ $greeting    = $hour < 12 ? 'Bonjour' : ($hour < 18 ? 'Bon après-midi' : 'Bonso
     </a>
     @endforeach
 </div>
+
+{{-- ── BARRE DE COMPLÉTION PROFIL ──────────────────────────────── --}}
+@if($pct < 100)
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <div class="flex items-center gap-3">
+            {{-- Badge pourcentage --}}
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-sm"
+                 style="background:{{ $bgLight }};border:1px solid {{ $borderClr }};color:{{ $barColor }}">
+                {{ $pct }}%
+            </div>
+            <div>
+                <p class="text-sm font-bold text-gray-900">Votre profil est complété à {{ $pct }}%</p>
+                <p class="text-xs text-gray-400">
+                    {{ $missing->count() }} élément{{ $missing->count() > 1 ? 's' : '' }} manquant{{ $missing->count() > 1 ? 's' : '' }} :
+                    {{ $missing->pluck('label')->join(', ') }}
+                </p>
+            </div>
+        </div>
+        <a href="/dashboard/profil"
+           class="flex-shrink-0 flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl transition-opacity hover:opacity-80"
+           style="background:{{ $bgLight }};color:{{ $barColor }};border:1px solid {{ $borderClr }}">
+            Compléter maintenant
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+            </svg>
+        </a>
+    </div>
+
+    {{-- Barre de progression --}}
+    <div class="w-full bg-gray-100 rounded-full h-2 mb-4 overflow-hidden">
+        <div class="h-2 rounded-full transition-all duration-500"
+             style="width:{{ $pct }}%;background:{{ $barColor }}"></div>
+    </div>
+
+    {{-- Checklist des champs --}}
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        @foreach($profileSteps as $step)
+        <div class="flex items-center gap-2 px-3 py-2 rounded-xl {{ $step['done'] ? 'bg-emerald-50/60' : 'bg-gray-50' }}">
+            @if($step['done'])
+                <div class="w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <span class="text-xs font-medium text-emerald-700 truncate">{{ $step['label'] }}</span>
+            @else
+                <div class="w-4 h-4 rounded-full border-2 border-dashed border-gray-300 flex-shrink-0"></div>
+                <span class="text-xs font-medium text-gray-400 truncate">{{ $step['label'] }}</span>
+            @endif
+        </div>
+        @endforeach
+    </div>
+
+</div>
+@endif
 
 {{-- ── LIGNE 3 : Corps principal ───────────────────────────────── --}}
 <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
@@ -249,10 +327,117 @@ $greeting    = $hour < 12 ? 'Bonjour' : ($hour < 18 ? 'Bon après-midi' : 'Bonso
             </div>
         </div>
 
+        {{-- Derniers messages vitrine --}}
+        <div id="messages" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <div class="flex items-center justify-between mb-5">
+                <div class="flex items-center gap-2.5">
+                    <h2 class="text-sm font-bold text-gray-900">Derniers messages</h2>
+                    @if($messageCount > 0)
+                    <span class="text-[11px] font-bold text-white px-2 py-0.5 rounded-full"
+                          style="background:linear-gradient(135deg,#0d2150,#0f3460)">{{ $messageCount }}</span>
+                    @endif
+                </div>
+                <span class="text-[11px] text-gray-400">Via votre vitrine publique</span>
+            </div>
+
+            @if($recentMessages->isEmpty())
+            <div class="text-center py-10">
+                <div class="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+                <p class="text-sm font-semibold text-gray-400 mb-1">Aucun message pour l'instant</p>
+                <p class="text-xs text-gray-300">Partagez votre vitrine pour recevoir des messages de patients.</p>
+                <a href="{{ $profileUrl }}" target="_blank"
+                   class="inline-flex items-center gap-1.5 mt-4 text-xs font-bold text-white px-4 py-2 rounded-xl transition-opacity hover:opacity-85"
+                   style="background:linear-gradient(135deg,#0d2150,#0f3460)">
+                    Voir ma vitrine →
+                </a>
+            </div>
+            @else
+            <div class="space-y-3">
+                @foreach($recentMessages as $msg)
+                <div class="flex items-start gap-3 p-4 rounded-xl border border-gray-100 hover:border-gray-200 hover:bg-gray-50/50 transition-colors group">
+                    {{-- Avatar initiale --}}
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
+                         style="background:linear-gradient(135deg,#0d2150,#0f3460)">
+                        {{ strtoupper(substr($msg->name, 0, 1)) }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between gap-2 mb-0.5">
+                            <p class="text-sm font-semibold text-gray-800 truncate">{{ $msg->name }}</p>
+                            <span class="text-[10px] text-gray-400 flex-shrink-0">
+                                {{ $msg->created_at->diffForHumans() }}
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-400 truncate">{{ $msg->email }}</p>
+                        <p class="text-xs text-gray-500 mt-1.5 line-clamp-2 leading-relaxed">{{ $msg->message }}</p>
+                    </div>
+                    <a href="mailto:{{ $msg->email }}"
+                       class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-gray-200"
+                       title="Répondre par e-mail">
+                        <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                        </svg>
+                    </a>
+                </div>
+                @endforeach
+
+                @if($messageCount > 3)
+                <p class="text-center text-xs text-gray-400 pt-1">
+                    + {{ $messageCount - 3 }} autre{{ $messageCount - 3 > 1 ? 's' : '' }} message{{ $messageCount - 3 > 1 ? 's' : '' }}
+                </p>
+                @endif
+            </div>
+            @endif
+        </div>
+
     </div>
 
-    {{-- Colonne droite : profil + support --}}
+    {{-- Colonne droite : vitrine + profil + support --}}
     <div class="xl:col-span-1 space-y-5">
+
+        {{-- Carte vitrine --}}
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5"
+             x-data="{ copied: false }">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                     style="background: linear-gradient(135deg, #0d2150, #0f3460);">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 004 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-sm font-bold text-gray-900">Votre vitrine</h2>
+                    <p class="text-[10px] text-gray-400">Page publique visible par vos patients</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-100 mb-4">
+                <span class="text-[11px] text-gray-500 truncate flex-1 font-mono">{{ url($profileUrl) }}</span>
+                <button
+                    @click="navigator.clipboard.writeText('{{ url($profileUrl) }}'); copied = true; setTimeout(() => copied = false, 2000)"
+                    class="flex-shrink-0 p-1.5 rounded-lg hover:bg-gray-200 transition-colors"
+                    title="Copier le lien">
+                    <svg x-show="!copied" class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    <svg x-show="copied" class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </button>
+            </div>
+
+            <a href="{{ $profileUrl }}" target="_blank"
+               class="w-full flex items-center justify-center gap-1.5 text-xs font-bold text-white py-2.5 rounded-xl transition-opacity hover:opacity-90"
+               style="background: linear-gradient(135deg, #0d2150, #0f3460);">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                </svg>
+                Voir ma page publique
+            </a>
+        </div>
 
         {{-- Carte profil --}}
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
@@ -260,11 +445,11 @@ $greeting    = $hour < 12 ? 'Bonjour' : ($hour < 18 ? 'Bon après-midi' : 'Bonso
             <div class="flex items-center gap-3 mb-5 pb-4 border-b border-gray-50">
                 <div class="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
                      style="background: linear-gradient(135deg, #0d2150, #0f3460);">
-                    {{ $initials ?: strtoupper(substr(session('firebase_email','?'), 0, 1)) }}
+                    {{ $initials ?: strtoupper(substr(auth()->user()->email, 0, 1)) }}
                 </div>
                 <div class="min-w-0">
                     <p class="text-sm font-bold text-gray-900 truncate">
-                        {{ $fullName ? 'Dr. '.$fullName : session('firebase_email') }}
+                        {{ $fullName ? 'Dr. '.$fullName : auth()->user()->email }}
                     </p>
                     <p class="text-xs text-gray-400 truncate">{{ $specialty ?: 'Spécialité non renseignée' }}</p>
                 </div>
@@ -272,7 +457,7 @@ $greeting    = $hour < 12 ? 'Bonjour' : ($hour < 18 ? 'Bon après-midi' : 'Bonso
 
             <div class="space-y-2.5 mb-4">
                 @foreach([
-                    ['label' => 'Email',    'value' => session('firebase_email')],
+                    ['label' => 'Email',    'value' => auth()->user()->email],
                     ['label' => 'Cabinet',  'value' => $cabinet ?: '—'],
                     ['label' => 'Ville',    'value' => $city    ?: '—'],
                 ] as $row)
@@ -318,4 +503,5 @@ $greeting    = $hour < 12 ? 'Bonjour' : ($hour < 18 ? 'Bon après-midi' : 'Bonso
     </div>
 
 </div>
+
 @endsection

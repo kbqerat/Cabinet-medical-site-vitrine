@@ -1,13 +1,9 @@
 <?php return array (
-  'kreait/laravel-firebase' => 
+  'laravel/pail' => 
   array (
-    'aliases' => 
-    array (
-      'Firebase' => 'Kreait\\Laravel\\Firebase\\Facades\\Firebase',
-    ),
     'providers' => 
     array (
-      0 => 'Kreait\\Laravel\\Firebase\\ServiceProvider',
+      0 => 'Laravel\\Pail\\PailServiceProvider',
     ),
   ),
   'laravel/tinker' => 
@@ -22,6 +18,13 @@
     'providers' => 
     array (
       0 => 'Carbon\\Laravel\\ServiceProvider',
+    ),
+  ),
+  'nunomaduro/collision' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
     ),
   ),
   'nunomaduro/termwind' => 

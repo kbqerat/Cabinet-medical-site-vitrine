@@ -1,9 +1,27 @@
 @extends('layouts.app')
 
+@section('title', 'MediAssist — Créez votre vitrine médicale professionnelle au Maroc')
+@section('description', 'MediAssist permet aux médecins marocains de créer leur vitrine en ligne, d\'être trouvés par leurs patients et de gérer leur cabinet. Essai gratuit 14 jours.')
+@section('og_title', 'MediAssist — Créez votre vitrine médicale au Maroc')
+@section('og_description', 'Plateforme pour médecins : vitrine professionnelle, annuaire, prise de contact en ligne. Essai gratuit 14 jours.')
+@section('canonical', url('/'))
+
+@push('schema')
+<script type="application/ld+json">{!! json_encode([
+    '@context'    => 'https://schema.org',
+    '@type'       => 'Organization',
+    'name'        => 'MediAssist',
+    'url'         => url('/'),
+    'description' => 'Plateforme de vitrine médicale professionnelle pour médecins au Maroc.',
+    'areaServed'  => 'MA',
+    'knowsAbout'  => ['Médecine', 'Santé', 'Cabinet médical'],
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}</script>
+@endpush
+
 @section('content')
 
 @php
-$isAdmin = session()->has('firebase_uid') && session('firebase_email') === env('ADMIN_EMAIL');
+$isAdmin = auth()->check() && auth()->user()->role === 'admin';
 @endphp
 
 @if($isAdmin)
@@ -12,7 +30,7 @@ $isAdmin = session()->has('firebase_uid') && session('firebase_email') === env('
      ACCUEIL ADMIN
 ══════════════════════════════════════════════ --}}
 @php
-$adminName = session('firebase_display_name') ?: explode('@', session('firebase_email', 'Admin'))[0];
+$adminName = trim(auth()->user()->first_name . ' ' . auth()->user()->last_name) ?: explode('@', auth()->user()->email ?? 'Admin')[0];
 $hour = (int) now()->format('H');
 $greeting = $hour < 12 ? 'Bonjour' : ($hour < 18 ? 'Bon après-midi' : 'Bonsoir');
 @endphp

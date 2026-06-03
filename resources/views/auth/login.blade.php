@@ -152,7 +152,7 @@
                         <div class="mb-7">
                             <div class="flex items-center justify-between mb-2">
                                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Mot de passe</label>
-                                <a href="#" class="text-xs text-blue-500 hover:text-blue-700 font-medium transition-colors">Oublié ?</a>
+                                <a href="/mot-de-passe-oublie" class="text-xs text-blue-500 hover:text-blue-700 font-medium transition-colors">Oublié ?</a>
                             </div>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">

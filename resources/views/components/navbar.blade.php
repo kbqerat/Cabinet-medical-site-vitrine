@@ -1,8 +1,8 @@
 @php
-$isLoggedIn  = session()->has('firebase_uid');
-$isAdmin     = $isLoggedIn && session('firebase_email') === env('ADMIN_EMAIL');
-$userEmail   = session('firebase_email', '');
-$displayName = session('firebase_display_name', '');
+$isLoggedIn  = auth()->check();
+$isAdmin     = $isLoggedIn && auth()->user()->role === 'admin';
+$userEmail   = $isLoggedIn ? auth()->user()->email : '';
+$displayName = $isLoggedIn ? trim(auth()->user()->first_name . ' ' . auth()->user()->last_name) : '';
 $initials    = $displayName
     ? collect(explode(' ', $displayName))->take(2)->map(fn($w) => strtoupper($w[0]))->implode('')
     : strtoupper(substr($userEmail, 0, 1));
@@ -15,7 +15,7 @@ $roleColor   = $isAdmin
 $avatarBg    = $isAdmin
     ? 'background: linear-gradient(135deg, #312e81, #4338ca)'
     : 'background: linear-gradient(135deg, #0f2460, #1d4ed8)';
-$photoUrl    = (!$isAdmin && $isLoggedIn) ? session('firebase_photo_url', '') : '';
+$photoUrl    = (!$isAdmin && $isLoggedIn) ? (auth()->user()->photo_url ?? '') : '';
 @endphp
 
 <nav x-data="{ open: false, scrolled: false, loginOpen: false, profileOpen: false, mobileLogin: false, mobileProfile: false }"
@@ -71,6 +71,13 @@ $photoUrl    = (!$isAdmin && $isLoggedIn) ? session('firebase_photo_url', '') : 
                         <span class="absolute bottom-1 left-3 right-3 h-0.5 bg-blue-500 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center"></span>
                     </a>
                     @endforeach
+                    <a href="/medecins"
+                       class="flex items-center gap-1.5 ml-1 px-3.5 py-2 text-sm font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors duration-200">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        Trouver un médecin
+                    </a>
                 @endif
             </div>
 
@@ -330,7 +337,16 @@ $photoUrl    = (!$isAdmin && $isLoggedIn) ? session('firebase_photo_url', '') : 
             @endforeach
         </div>
 
-        <div class="mt-3 pt-3 border-t border-gray-100">
+        <div class="mt-3 pt-3 border-t border-gray-100 space-y-2">
+            <a href="/medecins" @click="open = false"
+               class="flex items-center gap-3 px-3 py-3 rounded-2xl text-sm font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors duration-150">
+                <div class="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+                Trouver un médecin
+            </a>
             <a href="#contact" data-scroll @click="open = false"
                class="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-3 rounded-2xl text-sm font-semibold">
                 Demander une démo

@@ -9,8 +9,20 @@ class DoctorAuthMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        if (!session('firebase_uid')) {
+        if (!auth()->check()) {
             return redirect('/login/doctor');
+        }
+
+        if (auth()->user()->role === 'admin') {
+            return redirect('/admin/dashboard');
+        }
+
+        if (!auth()->user()->hasVerifiedEmail()) {
+            return redirect('/email-verification');
+        }
+
+        if (auth()->user()->verification_status !== 'approved') {
+            return redirect('/verification/en-attente');
         }
 
         return $next($request);

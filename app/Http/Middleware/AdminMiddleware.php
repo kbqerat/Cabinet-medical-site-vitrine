@@ -9,10 +9,8 @@ class AdminMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        $adminEmail = env('ADMIN_EMAIL');
-
-        if (!session('firebase_uid') || session('firebase_email') !== $adminEmail) {
-            return redirect('/login/doctor')->with('error', 'Accès réservé aux administrateurs.');
+        if (!auth()->check() || auth()->user()->role !== 'admin') {
+            return redirect('/login/admin');
         }
 
         return $next($request);

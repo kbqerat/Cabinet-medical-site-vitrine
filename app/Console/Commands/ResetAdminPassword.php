@@ -2,46 +2,35 @@
 
 namespace App\Console\Commands;
 
+use App\Models\User;
 use Illuminate\Console\Command;
-use Kreait\Firebase\Contract\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class ResetAdminPassword extends Command
 {
     protected $signature   = 'admin:reset-password {--password= : Mot de passe à définir (sinon généré automatiquement)}';
-    protected $description = 'Réinitialise le mot de passe du compte admin Firebase';
+    protected $description = 'Réinitialise le mot de passe du compte administrateur';
 
-    public function handle(Auth $auth): int
+    public function handle(): int
     {
-        $email    = env('ADMIN_EMAIL');
         $password = $this->option('password') ?: $this->generatePassword();
+        $admin    = User::where('role', 'admin')->first();
 
-        try {
-            // Essayer de récupérer l'utilisateur existant
-            try {
-                $user = $auth->getUserByEmail($email);
-                $auth->changeUserPassword($user->uid, $password);
-                $action = 'Mot de passe mis à jour';
-            } catch (\Kreait\Firebase\Exception\Auth\UserNotFound $e) {
-                // Créer le compte s'il n'existe pas
-                $user = $auth->createUserWithEmailAndPassword($email, $password);
-                $action = 'Compte admin créé';
-            }
-
-            $this->newLine();
-            $this->line("  <fg=green;options=bold>✓ {$action} avec succès !</>");
-            $this->newLine();
-            $this->line("  <fg=white;options=bold>Email    :</> {$email}");
-            $this->line("  <fg=white;options=bold>Password :</> <fg=yellow;options=bold>{$password}</>");
-            $this->newLine();
-            $this->line('  <fg=gray>→ Connectez-vous sur /login/doctor</fg=gray>');
-            $this->newLine();
-
-            return self::SUCCESS;
-
-        } catch (\Throwable $e) {
-            $this->error('Erreur : ' . $e->getMessage());
+        if (!$admin) {
+            $this->error('Aucun compte admin trouvé. Utilisez admin:create pour en créer un.');
             return self::FAILURE;
         }
+
+        $admin->update(['password' => Hash::make($password)]);
+
+        $this->newLine();
+        $this->line("  <fg=green;options=bold>✓ Mot de passe mis à jour avec succès !</>");
+        $this->newLine();
+        $this->line("  <fg=white;options=bold>Email    :</> {$admin->email}");
+        $this->line("  <fg=white;options=bold>Password :</> <fg=yellow;options=bold>{$password}</>");
+        $this->newLine();
+
+        return self::SUCCESS;
     }
 
     private function generatePassword(): string

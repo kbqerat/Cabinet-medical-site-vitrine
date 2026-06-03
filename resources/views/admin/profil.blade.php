@@ -5,7 +5,7 @@
 @section('content')
 @php
 $name     = $profile['name'] ?? '';
-$email    = session('firebase_email') ?? env('ADMIN_EMAIL', '');
+$email    = auth()->user()->email ?? '';
 $initials = strtoupper(substr($name ?: $email, 0, 1));
 @endphp
 

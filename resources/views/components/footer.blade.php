@@ -1,5 +1,5 @@
 @php
-$isAdminFooter = session()->has('firebase_uid') && session('firebase_email') === env('ADMIN_EMAIL');
+$isAdminFooter = auth()->check() && auth()->user()->role === 'admin';
 @endphp
 
 @if($isAdminFooter)

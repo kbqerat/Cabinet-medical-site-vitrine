@@ -18,7 +18,8 @@
             const matchTab = this.tab === 'all'
                 || (this.tab === 'pro'     &&  (d.plan ?? '') === 'pro')
                 || (this.tab === 'trial'   &&   d.trial_active)
-                || (this.tab === 'expired' && !d.trial_active && (d.plan ?? 'starter') !== 'pro');
+                || (this.tab === 'expired' && !d.trial_active && (d.plan ?? 'starter') !== 'pro')
+                || (this.tab === 'pending' && (d.verification_status ?? 'pending') === 'pending');
             return matchSearch && matchTab;
         });
     },
@@ -33,13 +34,14 @@
    @keydown.escape.window="close()">
 
 {{-- ── Stats ──────────────────────────────────────────────────── --}}
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+<div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
     @php
     $statCards = [
-        ['label' => 'Total inscrits',  'value' => count($doctors), 'icon' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z', 'color' => '#0d2150', 'light' => '#eff6ff', 'ring' => '#bfdbfe'],
-        ['label' => 'En essai actif',  'value' => $trialCount,     'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',  'color' => '#d97706', 'light' => '#fffbeb', 'ring' => '#fde68a'],
-        ['label' => 'Plan Starter',    'value' => $starterCount,   'icon' => 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z', 'color' => '#059669', 'light' => '#ecfdf5', 'ring' => '#a7f3d0'],
-        ['label' => 'Plan Pro',        'value' => $proCount,       'icon' => 'M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z', 'color' => '#0d2150', 'light' => '#eff6ff', 'ring' => '#bfdbfe'],
+        ['label' => 'Total inscrits',      'value' => count($doctors), 'icon' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z', 'color' => '#0d2150', 'light' => '#eff6ff', 'ring' => '#bfdbfe'],
+        ['label' => 'En attente verif.',   'value' => $pendingCount,   'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',  'color' => '#d97706', 'light' => '#fffbeb', 'ring' => '#fde68a'],
+        ['label' => 'En essai actif',      'value' => $trialCount,     'icon' => 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z', 'color' => '#059669', 'light' => '#ecfdf5', 'ring' => '#a7f3d0'],
+        ['label' => 'Plan Starter',        'value' => $starterCount,   'icon' => 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z', 'color' => '#6b7280', 'light' => '#f9fafb', 'ring' => '#e5e7eb'],
+        ['label' => 'Plan Pro',            'value' => $proCount,       'icon' => 'M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z', 'color' => '#0d2150', 'light' => '#eff6ff', 'ring' => '#bfdbfe'],
     ];
     @endphp
     @foreach($statCards as $s)
@@ -75,6 +77,7 @@
             @php
             $tabs = [
                 ['key' => 'all',     'label' => 'Tous',        'count' => count($doctors)],
+                ['key' => 'pending', 'label' => 'En attente',  'count' => $pendingCount],
                 ['key' => 'pro',     'label' => 'Pro',          'count' => $proCount],
                 ['key' => 'trial',   'label' => 'En essai',     'count' => $trialCount],
                 ['key' => 'expired', 'label' => 'Essai expiré', 'count' => $starterCount - $trialCount],
@@ -129,10 +132,10 @@
                 </tr>
             </template>
 
-            <template x-for="d in paginated" :key="d.uid ?? d.email">
+            <template x-for="d in paginated" :key="d.id ?? d.email">
                 <tr @click="open(d)"
                     class="hover:bg-blue-50/40 transition-colors cursor-pointer group"
-                    :class="selected && selected.uid === d.uid ? 'bg-blue-50/60' : ''">
+                    :class="selected && selected.id === d.id ? 'bg-blue-50/60' : ''">
 
                     <td class="px-5 py-3.5">
                         <div class="flex items-center gap-3">
@@ -149,6 +152,16 @@
                                 <p class="text-sm font-semibold text-gray-900 truncate"
                                    x-text="'Dr. ' + (((d.first_name ?? '') + ' ' + (d.last_name ?? '')).trim() || '—')"></p>
                                 <p class="text-xs text-gray-400 truncate" x-text="d.email ?? '—'"></p>
+                                <template x-if="(d.verification_status ?? 'pending') !== 'approved'">
+                                    <span :class="(d.verification_status ?? 'pending') === 'rejected'
+                                            ? 'text-red-700 bg-red-50 border-red-100'
+                                            : 'text-amber-700 bg-amber-50 border-amber-100'"
+                                          class="inline-flex items-center gap-1 text-[10px] font-semibold border px-1.5 py-0.5 rounded-full mt-0.5">
+                                        <span class="w-1 h-1 rounded-full"
+                                              :class="(d.verification_status ?? 'pending') === 'rejected' ? 'bg-red-500' : 'bg-amber-400 animate-pulse'"></span>
+                                        <span x-text="(d.verification_status ?? 'pending') === 'rejected' ? 'Refusé' : 'En attente'"></span>
+                                    </span>
+                                </template>
                             </div>
                         </div>
                     </td>
@@ -215,7 +228,7 @@
             <p class="text-sm text-gray-400">Aucun médecin trouvé</p>
         </div>
     </template>
-    <template x-for="d in paginated" :key="d.uid ?? d.email">
+    <template x-for="d in paginated" :key="d.id ?? d.email">
         <div @click="open(d)"
              class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 cursor-pointer hover:border-blue-200 hover:shadow-md transition-all active:scale-[0.99]">
             <div class="flex items-center gap-3 mb-3">
@@ -342,6 +355,66 @@
 
         {{-- Contenu scrollable --}}
         <div class="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+
+            {{-- Vérification d'identité --}}
+            <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2.5">Vérification d'identité</p>
+                <div class="rounded-xl border border-gray-100 overflow-hidden mb-2">
+                    <div class="flex items-center justify-between px-4 py-3">
+                        <span class="text-xs text-gray-400 flex-shrink-0 w-24">Statut</span>
+                        <div>
+                            <template x-if="(selected?.verification_status ?? 'pending') === 'approved'">
+                                <span class="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Approuvé
+                                </span>
+                            </template>
+                            <template x-if="(selected?.verification_status ?? 'pending') === 'rejected'">
+                                <span class="inline-flex items-center gap-1.5 text-[11px] font-bold text-red-700 bg-red-50 border border-red-100 px-2.5 py-1 rounded-full">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>Refusé
+                                </span>
+                            </template>
+                            <template x-if="(selected?.verification_status ?? 'pending') === 'pending'">
+                                <span class="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-full">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>En attente
+                                </span>
+                            </template>
+                        </div>
+                    </div>
+                    <template x-if="selected?.diploma_path">
+                        <div class="flex items-center justify-between px-4 py-3 border-t border-gray-50">
+                            <span class="text-xs text-gray-400 flex-shrink-0 w-24">Diplôme</span>
+                            <a :href="'/admin/medecins/' + selected.id + '/diploma'" target="_blank"
+                               class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                </svg>
+                                Télécharger
+                            </a>
+                        </div>
+                    </template>
+                </div>
+                <div class="flex gap-2">
+                    <form :action="'/admin/medecins/' + (selected?.id ?? '') + '/approve'" method="POST"
+                          class="flex-1"
+                          x-show="(selected?.verification_status ?? 'pending') !== 'approved'">
+                        @csrf
+                        <button type="submit"
+                                class="w-full py-2.5 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90"
+                                style="background: linear-gradient(135deg, #059669, #047857)">
+                            ✓ Approuver
+                        </button>
+                    </form>
+                    <form :action="'/admin/medecins/' + (selected?.id ?? '') + '/reject'" method="POST"
+                          class="flex-1"
+                          x-show="(selected?.verification_status ?? 'pending') !== 'rejected'">
+                        @csrf
+                        <button type="submit"
+                                class="w-full py-2.5 rounded-xl text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 transition-all">
+                            ✗ Refuser
+                        </button>
+                    </form>
+                </div>
+            </div>
 
             {{-- Statut abonnement --}}
             <div>
@@ -485,9 +558,9 @@
                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2.5">Compte</p>
                 <div class="space-y-0 rounded-xl border border-gray-100 overflow-hidden">
                     <div class="flex items-center justify-between px-4 py-3">
-                        <span class="text-xs text-gray-400 flex-shrink-0 w-24">UID Firebase</span>
+                        <span class="text-xs text-gray-400 flex-shrink-0 w-24">ID</span>
                         <span class="text-[10px] font-mono text-gray-500 text-right truncate ml-4 max-w-[200px]"
-                              x-text="selected?.uid || '—'"></span>
+                              x-text="selected?.id || '—'"></span>
                     </div>
                     <div class="flex items-center justify-between px-4 py-3 border-t border-gray-50">
                         <span class="text-xs text-gray-400 flex-shrink-0 w-24">Inscrit le</span>

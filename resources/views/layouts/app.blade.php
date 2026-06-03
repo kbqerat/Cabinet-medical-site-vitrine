@@ -3,7 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MediAssist — Logiciel de Gestion de Cabinet Médical</title>
+
+    <title>@yield('title', 'MediAssist — Plateforme Médicale au Maroc')</title>
+    <meta name="description" content="@yield('description', 'MediAssist permet aux médecins de créer leur vitrine professionnelle en ligne. Trouvez un médecin vérifié près de chez vous.')">
+
+    {{-- Open Graph --}}
+    <meta property="og:site_name" content="MediAssist">
+    <meta property="og:type"      content="@yield('og_type', 'website')">
+    <meta property="og:title"     content="@yield('og_title', 'MediAssist — Plateforme Médicale au Maroc')">
+    <meta property="og:description" content="@yield('og_description', 'MediAssist permet aux médecins de créer leur vitrine professionnelle en ligne. Trouvez un médecin vérifié près de chez vous.')">
+    <meta property="og:url"       content="{{ url()->current() }}">
+    <meta property="og:image"     content="@yield('og_image', url('/og-default.png'))">
+    <meta property="og:locale"    content="fr_MA">
+
+    {{-- Twitter Card --}}
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:title"       content="@yield('og_title', 'MediAssist — Plateforme Médicale au Maroc')">
+    <meta name="twitter:description" content="@yield('og_description', 'MediAssist permet aux médecins de créer leur vitrine professionnelle en ligne.')">
+    <meta name="twitter:image"       content="@yield('og_image', url('/og-default.png'))">
+
+    {{-- Canonique --}}
+    @hasSection('canonical')
+    <link rel="canonical" href="@yield('canonical')">
+    @else
+    <link rel="canonical" href="{{ url()->current() }}">
+    @endif
+
+    {{-- Slots SEO supplémentaires (schema JSON-LD, etc.) --}}
+    @stack('schema')
+
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>[x-cloak]{display:none!important}</style>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -24,7 +52,7 @@
     @include('components.footer')
 
     {{-- Floating contact widget (masqué pour l'admin) --}}
-    @if(!(session()->has('firebase_uid') && session('firebase_email') === env('ADMIN_EMAIL')))
+    @if(!(auth()->check() && auth()->user()->role === 'admin'))
     <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3"
          x-data="{
              open: false,

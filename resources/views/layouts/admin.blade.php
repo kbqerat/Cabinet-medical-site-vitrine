@@ -124,11 +124,11 @@
                         class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-white/10 transition-all group">
                     <div class="w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0"
                          style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
-                        {{ strtoupper(substr(session('firebase_email', 'A'), 0, 1)) }}
+                        {{ strtoupper(substr(auth()->user()->email ?? 'A', 0, 1)) }}
                     </div>
                     <div class="min-w-0 flex-1 text-left">
                         <p class="text-[11px] font-semibold text-white truncate leading-tight">Administrateur</p>
-                        <p class="text-[10px] text-blue-300/60 truncate">{{ session('firebase_email') }}</p>
+                        <p class="text-[10px] text-blue-300/60 truncate">{{ auth()->user()->email }}</p>
                     </div>
                     <svg class="w-3.5 h-3.5 text-blue-300/50 flex-shrink-0 transition-transform duration-200"
                          :class="open ? 'rotate-180' : ''"
@@ -160,7 +160,7 @@
                     {{-- Header --}}
                     <div class="px-4 py-3 border-b border-gray-100">
                         <p class="text-xs font-semibold text-gray-800 truncate">Administrateur</p>
-                        <p class="text-[10px] text-gray-400 truncate">{{ session('firebase_email') }}</p>
+                        <p class="text-[10px] text-gray-400 truncate">{{ auth()->user()->email }}</p>
                     </div>
 
                     <div class="py-1.5">

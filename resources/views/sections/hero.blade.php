@@ -61,12 +61,12 @@
                             </svg>
                         </span>
                     </a>
-                    <a href="#features" data-scroll
+                    <a href="/medecins"
                        class="inline-flex items-center justify-center sm:justify-start gap-2 text-gray-600 hover:text-blue-600 font-medium text-sm sm:text-base transition-colors duration-200 group">
-                        Voir les fonctionnalités
-                        <svg class="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        <svg class="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0118 0z"/>
                         </svg>
+                        Trouver un médecin
                     </a>
                 </div>
 

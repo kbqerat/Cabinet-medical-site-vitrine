@@ -264,15 +264,12 @@
                             </svg>
                         </button>
                     </div>
-                    {{-- Indicateur de force --}}
-                    <div x-show="password.length > 0" class="mt-2 space-y-1">
-                        <div class="flex gap-1">
-                            @for($i = 1; $i <= 4; $i++)
-                            <div class="h-1 flex-1 rounded-full transition-all duration-300"
-                                 :class="strength >= {{ $i }} ? strengthColor : 'bg-gray-100'"></div>
-                            @endfor
-                        </div>
-                        <p class="text-[11px] text-gray-400">Force : <span x-text="strengthLabel" class="font-semibold" :class="{ 'text-red-400': strength===1, 'text-amber-400': strength===2, 'text-blue-400': strength===3, 'text-emerald-500': strength===4 }"></span></p>
+                    {{-- Exigences du mot de passe --}}
+                    <div class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] font-medium">
+                        <span :class="password.length >= 8 ? 'text-emerald-600' : 'text-gray-400'">● 8 caractères min.</span>
+                        <span :class="/[A-Z]/.test(password) ? 'text-emerald-600' : 'text-gray-400'">● Majuscule (A-Z)</span>
+                        <span :class="/[a-z]/.test(password) ? 'text-emerald-600' : 'text-gray-400'">● Minuscule (a-z)</span>
+                        <span :class="/[0-9]/.test(password) ? 'text-emerald-600' : 'text-gray-400'">● Chiffre (0-9)</span>
                     </div>
                 </div>
 
